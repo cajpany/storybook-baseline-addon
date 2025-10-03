@@ -28,12 +28,16 @@ export interface BaselineOptions {
 
 export interface BaselineStoryParameters extends BaselineOptions {
   features?: string[];
+  css?: string | string[];
+  autoDetect?: boolean;
 }
 
 export interface BaselineSummaryEventPayload {
   storyId: string;
   target: string;
   annotatedCount: number;
+  detectedCount?: number;
+  source: "manual" | "auto" | "none";
   features: string[];
   summary: BaselineStatusSummary | null;
 }

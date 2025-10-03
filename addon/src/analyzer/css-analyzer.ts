@@ -25,18 +25,17 @@ export interface CssAnalyzerOptions {
   sourcePath: string;
 }
 
-export async function parseCss(
+export function parseCss(
   cssContent: string,
   options: CssAnalyzerOptions,
-): Promise<CssAnalyzerResult> {
-  const processor = postcss();
-  const result = await processor.process(cssContent, {
+): CssAnalyzerResult {
+  const root = postcss.parse(cssContent, {
     from: options.sourcePath,
   });
 
   const features: ParsedCssFeature[] = [];
 
-  result.root.walk((node) => {
+  root.walk((node) => {
     if (node.type === "decl") {
       features.push(extractFromDeclaration(node));
       return;

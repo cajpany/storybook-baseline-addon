@@ -2,13 +2,13 @@ import { describe, it, expect } from "vitest";
 
 import { parseCss, toFeatureUsages } from "../css-analyzer";
 
-async function analyze(css: string) {
-  const parsed = await parseCss(css, { sourcePath: "Inline.css" });
+function analyze(css: string) {
+  const parsed = parseCss(css, { sourcePath: "Inline.css" });
   return toFeatureUsages(parsed);
 }
 
 describe("css-analyzer feature mapping", () => {
-  it("detects container queries and grid layout", async () => {
+  it("detects container queries and grid layout", () => {
     const css = `
       @container card (min-width: 30rem) {
         .card {
@@ -17,7 +17,7 @@ describe("css-analyzer feature mapping", () => {
       }
     `;
 
-    const usages = await analyze(css);
+    const usages = analyze(css);
     const featureIds = usages.map((usage) => usage.featureId);
 
     expect(featureIds).toEqual(
@@ -25,20 +25,20 @@ describe("css-analyzer feature mapping", () => {
     );
   });
 
-  it("detects :has pseudo-class and flexbox", async () => {
+  it("detects :has pseudo-class and flexbox", () => {
     const css = `
       .list:has(> li.selected) {
         display: flex;
       }
     `;
 
-    const usages = await analyze(css);
+    const usages = analyze(css);
     const featureIds = usages.map((usage) => usage.featureId);
 
     expect(featureIds).toEqual(expect.arrayContaining(["has", "flexbox"]));
   });
 
-  it("ignores unrelated declarations", async () => {
+  it("ignores unrelated declarations", () => {
     const css = `
       .button {
         color: red;
@@ -46,7 +46,7 @@ describe("css-analyzer feature mapping", () => {
       }
     `;
 
-    const usages = await analyze(css);
+    const usages = analyze(css);
 
     expect(usages).toHaveLength(0);
   });
