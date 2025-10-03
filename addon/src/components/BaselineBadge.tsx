@@ -4,34 +4,44 @@ import { styled } from "storybook/theming";
 import { BADGE_ELEMENT_ID } from "../constants";
 import type { BaselineStatusSummary } from "../types";
 
-const Wrapper = styled.div(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  gap: theme.layoutMargin,
-  padding: `${theme.layoutMargin / 2}px ${theme.layoutMargin}px`,
-  borderRadius: theme.appBorderRadius * 2,
-  border: `1px solid ${theme.appBorderColor}`,
-  backgroundColor: theme.background.content,
-  color: theme.color.defaultText,
-  marginBottom: theme.layoutMargin,
-  fontFamily: theme.typography.fonts.base,
-  flexWrap: "wrap",
-}));
+const Wrapper = styled.div(({ theme }) => {
+  const layoutMargin = theme?.layoutMargin ?? 16;
+  const borderRadius = theme?.appBorderRadius ?? 4;
+  const borderColor = theme?.appBorderColor ?? "rgba(0, 0, 0, 0.1)";
+  const backgroundColor =
+    theme?.background?.content ?? theme?.background?.app ?? "#ffffff";
+  const textColor = theme?.color?.defaultText ?? "#333333";
+  const fontFamily = theme?.typography?.fonts?.base ?? "sans-serif";
+
+  return {
+    display: "flex",
+    alignItems: "center",
+    gap: layoutMargin,
+    padding: `${layoutMargin / 2}px ${layoutMargin}px`,
+    borderRadius: borderRadius * 2,
+    border: `1px solid ${borderColor}`,
+    backgroundColor,
+    color: textColor,
+    marginBottom: layoutMargin,
+    fontFamily,
+    flexWrap: "wrap",
+  };
+});
 
 const StatusChip = styled.span<{ tone: "positive" | "warning" | "critical" }>(
   ({ theme, tone }) => {
     const tones = {
       positive: {
-        background: theme.color.positive,
-        color: theme.color.lightest,
+        background: theme?.color?.positive ?? "#2f9e44",
+        color: theme?.color?.lightest ?? "#ffffff",
       },
       warning: {
-        background: theme.color.warning,
-        color: theme.color.darkest,
+        background: theme?.color?.warning ?? "#f0b429",
+        color: theme?.color?.darkest ?? "#2c1810",
       },
       critical: {
-        background: theme.color.negative,
-        color: theme.color.lightest,
+        background: theme?.color?.negative ?? "#e03131",
+        color: theme?.color?.lightest ?? "#ffffff",
       },
     } as const;
 
@@ -62,7 +72,7 @@ const Details = styled.div({
 
 const Note = styled.span(({ theme }) => ({
   fontSize: 12,
-  color: theme.color.mediumdark,
+  color: theme?.color?.mediumdark ?? "#5c5f66",
 }));
 
 interface BaselineBadgeProps {

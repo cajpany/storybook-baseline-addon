@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React from "react";
 import { addons } from "storybook/preview-api";
 import type {
   Renderer,
@@ -19,18 +19,23 @@ import type {
   BaselineSummaryEventPayload,
 } from "./types";
 
-export const withBaseline = (
-  StoryFn: StoryFunction<Renderer>,
-  context: StoryContext<Renderer>,
-) => {
+interface BaselineDecoratorProps {
+  storyFn: StoryFunction<Renderer>;
+  context: StoryContext<Renderer>;
+}
+
+const channel = addons.getChannel();
+
+const BaselineDecorator: React.FC<BaselineDecoratorProps> = ({
+  storyFn,
+  context,
+}) => {
   const parameters = (context.parameters?.[PARAM_KEY] ?? {}) as
     | BaselineStoryParameters
     | undefined;
   const annotatedFeatures = Array.isArray(parameters?.features)
-    ? parameters!.features.filter((value): value is string => typeof value === "string")
+    ? parameters.features.filter((value): value is string => typeof value === "string")
     : [];
-
-  const featuresKey = annotatedFeatures.join("|");
 
   const globalTarget =
     typeof context.globals?.[GLOBAL_KEY] === "string"
@@ -39,28 +44,21 @@ export const withBaseline = (
 
   const target = parameters?.target ?? globalTarget ?? DEFAULT_BASELINE_TARGET;
 
-  const summary = useMemo(() => {
-    if (annotatedFeatures.length === 0) {
-      return null;
-    }
-    return computeBaselineSummary(annotatedFeatures, target);
-  }, [featuresKey, target]);
+  const summary = annotatedFeatures.length
+    ? computeBaselineSummary(annotatedFeatures, target)
+    : null;
 
-  const payload = useMemo<BaselineSummaryEventPayload>(
-    () => ({
-      storyId: context.id,
-      target,
-      annotatedCount: annotatedFeatures.length,
-      features: annotatedFeatures,
-      summary,
-    }),
-    [context.id, target, featuresKey, summary],
-  );
+  const storyElement = storyFn(context);
 
-  useEffect(() => {
-    const channel = addons.getChannel();
-    channel.emit(EVENTS.SUMMARY, payload);
-  }, [payload]);
+  const payload: BaselineSummaryEventPayload = {
+    storyId: context.id,
+    target,
+    annotatedCount: annotatedFeatures.length,
+    features: annotatedFeatures,
+    summary,
+  };
+
+  channel.emit(EVENTS.SUMMARY, payload);
 
   return React.createElement(
     React.Fragment,
@@ -70,6 +68,11 @@ export const withBaseline = (
       target,
       annotatedCount: annotatedFeatures.length,
     }),
-    StoryFn(),
+    storyElement,
   );
 };
+
+export const withBaseline = (
+  StoryFn: StoryFunction<Renderer>,
+  context: StoryContext<Renderer>,
+) => React.createElement(BaselineDecorator, { storyFn: StoryFn, context });

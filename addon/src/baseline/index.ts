@@ -1,4 +1,4 @@
-import { features } from "web-features";
+import featuresData from "web-features/data.json";
 
 import type {
   BaselineFeatureUsage,
@@ -78,6 +78,8 @@ function meetsTarget(
 
   return false;
 }
+
+const features = featuresData as Record<string, WebFeatureEntry>;
 
 export function computeBaselineSummary(
   featureIds: string[],

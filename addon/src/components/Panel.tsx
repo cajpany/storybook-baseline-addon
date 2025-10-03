@@ -156,7 +156,6 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
             <thead>
               <tr>
                 <th style={{ width: "35%" }}>Feature</th>
-                <th style={{ width: "15%" }}>Support</th>
                 <th style={{ width: "20%" }}>Baseline status</th>
                 <th style={{ width: "30%" }}>Browsers</th>
               </tr>

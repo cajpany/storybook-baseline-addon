@@ -88,8 +88,8 @@ export const ListItem: React.FC<ListItemProps> = ({ item }) => {
 
 export const List: React.FC<ListProps> = ({ items }) => (
   <ListWrapper>
-    {items.map((item, idx) => (
-      <ListItem key={idx} item={item}></ListItem>
+    {items.map((item, index) => (
+      <ListItem key={`${item.title}-${index}`} item={item}></ListItem>
     ))}
   </ListWrapper>
 );
