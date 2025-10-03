@@ -79,25 +79,38 @@ interface BaselineBadgeProps {
   summary: BaselineStatusSummary | null;
   target: string;
   annotatedCount: number;
+  detectedCount: number;
+  source: "manual" | "auto" | "none";
 }
 
 function getBadgeCopy(
   summary: BaselineStatusSummary | null,
   target: string,
   annotatedCount: number,
+  detectedCount: number,
+  source: "manual" | "auto" | "none",
 ): {
   label: string;
   tone: "positive" | "warning" | "critical";
   detail: string;
   hint?: string;
 } {
-  if (!annotatedCount) {
+  if (source === "none") {
     return {
       label: "Baseline target not set",
       tone: "warning",
       detail:
-        "Add `parameters.baseline.features` to this story to calculate compatibility.",
-      hint: "Manual annotations power the Baseline panel during the MVP phase.",
+        "Add `parameters.baseline.features` or enable auto detection to calculate compatibility.",
+      hint: "Provide manual annotations or CSS for automatic analysis.",
+    };
+  }
+
+  if (source === "auto" && detectedCount > 0) {
+    return {
+      label: `Baseline ${target}`,
+      tone: "warning",
+      detail: `${detectedCount} feature${detectedCount === 1 ? "" : "s"} detected automatically. Verify results before relying on them.`,
+      hint: "Add manual annotations for authoritative Baseline reporting.",
     };
   }
 
@@ -129,8 +142,10 @@ export const BaselineBadge: React.FC<BaselineBadgeProps> = ({
   summary,
   target,
   annotatedCount,
+  detectedCount,
+  source,
 }) => {
-  const copy = getBadgeCopy(summary, target, annotatedCount);
+  const copy = getBadgeCopy(summary, target, annotatedCount, detectedCount, source);
 
   return (
     <Wrapper id={BADGE_ELEMENT_ID}>

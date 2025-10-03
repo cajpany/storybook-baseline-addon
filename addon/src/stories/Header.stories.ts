@@ -5,6 +5,18 @@ const meta: Meta<typeof Header> = {
   title: "Example/Header",
   component: Header,
   parameters: {
+    baseline: {
+      autoDetect: true,
+      css: `
+        header {
+          display: flex;
+        }
+
+        header nav:has(a.active) {
+          display: grid;
+        }
+      `,
+    },
     // More on Story layout: https://storybook.js.org/docs/react/configure/story-layout
     layout: "fullscreen",
   },

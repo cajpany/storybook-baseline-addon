@@ -93,20 +93,37 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
   });
 
   const summary = payload?.summary ?? null;
+  const featureSource = payload?.source ?? "none";
+  const primaryCount = featureSource === "manual"
+    ? payload?.annotatedCount ?? 0
+    : payload?.detectedCount ?? 0;
 
   const statusCopy = useMemo(() => {
-    if (!payload || payload.annotatedCount === 0) {
+    if (!payload) {
       return {
-        headline: "Awaiting annotations",
+        headline: "Baseline analyzer idle",
+        subline: "Render a story to populate Baseline data.",
+      };
+    }
+
+    if (featureSource === "none") {
+      return {
+        headline: "Awaiting features",
         subline:
-          "Add `parameters.baseline.features` to stories to see Baseline coverage.",
+          "Add manual annotations or provide CSS for automatic detection to begin analysis.",
       };
     }
 
     if (!summary) {
       return {
-        headline: "Summary unavailable",
-        subline: "Unable to compute Baseline data for the supplied features.",
+        headline:
+          featureSource === "auto"
+            ? "Automatic analysis incomplete"
+            : "Summary unavailable",
+        subline:
+          featureSource === "auto"
+            ? "Auto-detected CSS could not be parsed. Validate CSS input or add manual annotations."
+            : "Unable to compute Baseline data for the supplied features.",
       };
     }
 
@@ -145,7 +162,10 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
                 Target: <strong>{payload.target}</strong>
               </div>
               <div style={{ fontSize: 12 }}>
-                Annotated features: <strong>{payload.annotatedCount}</strong>
+                Source: <strong>{featureSource}</strong>
+              </div>
+              <div style={{ fontSize: 12 }}>
+                Features considered: <strong>{primaryCount}</strong>
               </div>
             </div>
           ) : null}

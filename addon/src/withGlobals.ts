@@ -7,6 +7,7 @@ import type {
 } from "storybook/internal/types";
 
 import { computeBaselineSummary } from "./baseline";
+import { parseCss, toFeatureUsages } from "./analyzer/css-analyzer";
 import { BaselineBadge } from "./components/BaselineBadge";
 import {
   DEFAULT_BASELINE_TARGET,
@@ -37,6 +38,13 @@ const BaselineDecorator: React.FC<BaselineDecoratorProps> = ({
     ? parameters.features.filter((value): value is string => typeof value === "string")
     : [];
 
+  const shouldAutoDetect = parameters?.autoDetect !== false;
+  const cssSources = normalizeCssSources(parameters?.css);
+  const detectedFeatures = shouldAutoDetect
+    ? detectFeaturesFromCss(cssSources, context)
+    : [];
+  const detectedCount = detectedFeatures.length;
+
   const globalTarget =
     typeof context.globals?.[GLOBAL_KEY] === "string"
       ? (context.globals[GLOBAL_KEY] as string)
@@ -44,8 +52,16 @@ const BaselineDecorator: React.FC<BaselineDecoratorProps> = ({
 
   const target = parameters?.target ?? globalTarget ?? DEFAULT_BASELINE_TARGET;
 
-  const summary = annotatedFeatures.length
-    ? computeBaselineSummary(annotatedFeatures, target)
+  const hasAnnotated = annotatedFeatures.length > 0;
+  const featuresForSummary = hasAnnotated ? annotatedFeatures : detectedFeatures;
+  const source: BaselineSummaryEventPayload["source"] = hasAnnotated
+    ? "manual"
+    : detectedFeatures.length > 0
+      ? "auto"
+      : "none";
+
+  const summary = featuresForSummary.length
+    ? computeBaselineSummary(featuresForSummary, target)
     : null;
 
   const storyElement = storyFn(context);
@@ -54,7 +70,9 @@ const BaselineDecorator: React.FC<BaselineDecoratorProps> = ({
     storyId: context.id,
     target,
     annotatedCount: annotatedFeatures.length,
-    features: annotatedFeatures,
+    detectedCount,
+    source,
+    features: featuresForSummary,
     summary,
   };
 
@@ -67,6 +85,8 @@ const BaselineDecorator: React.FC<BaselineDecoratorProps> = ({
       summary,
       target,
       annotatedCount: annotatedFeatures.length,
+      detectedCount,
+      source,
     }),
     storyElement,
   );
@@ -75,4 +95,50 @@ const BaselineDecorator: React.FC<BaselineDecoratorProps> = ({
 export const withBaseline = (
   StoryFn: StoryFunction<Renderer>,
   context: StoryContext<Renderer>,
-) => React.createElement(BaselineDecorator, { storyFn: StoryFn, context });
+): React.ReactElement => React.createElement(BaselineDecorator, { storyFn: StoryFn, context });
+
+function normalizeCssSources(css: BaselineStoryParameters["css"] | undefined): string[] {
+  if (!css) {
+    return [];
+  }
+
+  const values = Array.isArray(css) ? css : [css];
+
+  return values
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+}
+
+function detectFeaturesFromCss(
+  cssSources: string[],
+  context: StoryContext<Renderer>,
+): string[] {
+  if (!cssSources.length) {
+    return [];
+  }
+
+  const detected = new Set<string>();
+
+  cssSources.forEach((css, index) => {
+    try {
+      const parsed = parseCss(css, {
+        sourcePath: `${context.title ?? "story"}-${context.id}-css-${index}`,
+      });
+      const usages = toFeatureUsages(parsed);
+      for (const usage of usages) {
+        detected.add(usage.featureId);
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV !== "production") {
+        // eslint-disable-next-line no-console -- baseline analyzer diagnostics
+        console.warn(
+          `[baseline] Failed to analyze CSS for story ${context.id}:`,
+          error,
+        );
+      }
+    }
+  });
+
+  return Array.from(detected);
+}
