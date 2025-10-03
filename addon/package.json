@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@storybook/icons": "^1.4.0",
+    "postcss": "^8.5.6",
     "web-features": "^3.3.0"
   },
   "devDependencies": {
