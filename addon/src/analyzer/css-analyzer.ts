@@ -1,5 +1,7 @@
 import postcss, { type Declaration, type AtRule, type Rule } from "postcss";
 
+import featuresData from "web-features/data.json";
+
 import type { BaselineFeatureUsage } from "../types";
 
 export interface ParsedCssFeature {
@@ -99,12 +101,138 @@ function getLocation(
 export function toFeatureUsages(
   parsed: CssAnalyzerResult,
 ): BaselineFeatureUsage[] {
-  return parsed.features.map((feature) => ({
-    featureId: feature.name,
+  const detected = new Set<string>();
+
+  for (const feature of parsed.features) {
+    const featureId = mapFeatureToBaselineId(feature);
+    if (featureId && isKnownFeature(featureId)) {
+      detected.add(featureId);
+    }
+  }
+
+  return Array.from(detected).map((featureId) => ({
+    featureId,
     support: "not",
-    name: feature.name,
+    name: getFeatureName(featureId),
     browsers: [],
     baseline: null,
     found: true,
   }));
+}
+
+type FeatureMappingRule = (feature: ParsedCssFeature) => string | null;
+
+interface FeatureRegistryEntry {
+  kind?: string;
+  name?: string | null;
+}
+
+const featureRegistry = (featuresData as { features: Record<string, FeatureRegistryEntry> })
+  .features;
+
+const DECLARATION_FEATURES: Record<string, string> = {
+  "container": "container-queries",
+  "container-type": "container-queries",
+  "container-name": "container-queries",
+  "font-size-adjust": "font-size-adjust",
+  "font-variant-alternates": "font-variant-alternates",
+  "backdrop-filter": "backdrop-filter",
+};
+
+const AT_RULE_FEATURES: Record<string, string> = {
+  "container": "container-queries",
+  "supports": "supports",
+  "layer": "cascade-layers",
+};
+
+const declarationRules: FeatureMappingRule[] = [
+  (feature) => DECLARATION_FEATURES[feature.name.toLowerCase()] ?? null,
+  (feature) => {
+    if (feature.name.toLowerCase() === "display") {
+      const value = feature.value?.toLowerCase() ?? "";
+      if (value.includes("grid")) {
+        return "grid";
+      }
+      if (value.includes("flex")) {
+        return "flexbox";
+      }
+    }
+    return null;
+  },
+  (feature) => {
+    if (feature.name.toLowerCase() === "position") {
+      const value = feature.value?.toLowerCase() ?? "";
+      if (value.includes("sticky")) {
+        return "sticky-positioning";
+      }
+    }
+    return null;
+  },
+  (feature) => {
+    const value = feature.value?.toLowerCase() ?? "";
+    if (value.includes("subgrid")) {
+      return "subgrid";
+    }
+    return null;
+  },
+];
+
+const atRuleRules: FeatureMappingRule[] = [
+  (feature) => AT_RULE_FEATURES[feature.name.toLowerCase()] ?? null,
+];
+
+const selectorRules: FeatureMappingRule[] = [
+  (feature) => {
+    const selector = feature.name.toLowerCase();
+    if (selector.includes(":has(")) {
+      return "has";
+    }
+    return null;
+  },
+  (feature) => {
+    const selector = feature.name.toLowerCase();
+    if (selector.includes(":is(")) {
+      return "is";
+    }
+    return null;
+  },
+  (feature) => {
+    const selector = feature.name.toLowerCase();
+    if (selector.includes(":where(")) {
+      return "where";
+    }
+    return null;
+  },
+];
+
+const RULES_BY_TYPE: Record<ParsedCssFeature["type"], FeatureMappingRule[]> = {
+  "declaration": declarationRules,
+  "at-rule": atRuleRules,
+  "selector": selectorRules,
+};
+
+function mapFeatureToBaselineId(feature: ParsedCssFeature): string | null {
+  const rules = RULES_BY_TYPE[feature.type];
+  if (!rules) {
+    return null;
+  }
+
+  for (const rule of rules) {
+    const result = rule(feature);
+    if (result) {
+      return result;
+    }
+  }
+
+  return null;
+}
+
+function isKnownFeature(featureId: string): boolean {
+  const entry = featureRegistry[featureId];
+  return Boolean(entry && entry.kind === "feature");
+}
+
+function getFeatureName(featureId: string): string {
+  const entry = featureRegistry[featureId];
+  return entry?.name ?? featureId;
 }
