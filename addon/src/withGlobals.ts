@@ -64,6 +64,24 @@ const BaselineDecorator: React.FC<BaselineDecoratorProps> = ({
     ? computeBaselineSummary(featuresForSummary, target)
     : null;
 
+  // Log warnings to console in dev mode
+  const hasNonBaseline = (summary?.nonCompliantCount ?? 0) > 0;
+  const shouldWarn = parameters?.warnOnNonBaseline !== false && !parameters?.ignoreWarnings;
+  
+  if (hasNonBaseline && shouldWarn && process.env.NODE_ENV !== "production") {
+    const nonCompliantFeatures = summary?.features.filter(
+      (f) => f.support === "not"
+    ) ?? [];
+    
+    if (nonCompliantFeatures.length > 0) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[Baseline] Story "${context.title}/${context.name}" uses ${nonCompliantFeatures.length} non-Baseline feature(s):`,
+        nonCompliantFeatures.map((f) => f.featureId)
+      );
+    }
+  }
+
   const storyElement = storyFn(context);
 
   const payload: BaselineSummaryEventPayload = {

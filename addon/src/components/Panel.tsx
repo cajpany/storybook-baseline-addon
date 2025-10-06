@@ -8,6 +8,7 @@ import { SearchIcon, CloseIcon } from "@storybook/icons";
 import { EVENTS } from "../constants";
 import type { BaselineFeatureUsage, BaselineSummaryEventPayload } from "../types";
 import { CompatibilityMatrix } from "./CompatibilityMatrix";
+import { WarningBanner } from "./WarningBanner";
 
 interface PanelProps {
   active: boolean;
@@ -147,6 +148,7 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [supportFilter, setSupportFilter] = useState<"all" | "widely" | "newly" | "not">("all");
   const [showOnlyNonBaseline, setShowOnlyNonBaseline] = useState(false);
+  const [dismissedWarnings, setDismissedWarnings] = useState<Set<string>>(new Set());
 
   useChannel({
     [EVENTS.SUMMARY]: (summary: BaselineSummaryEventPayload) => {
@@ -196,6 +198,16 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
     setSearchQuery("");
     setSupportFilter("all");
     setShowOnlyNonBaseline(false);
+  };
+
+  const warningKey = `${payload?.storyId}-nonbaseline`;
+  const shouldShowWarning = 
+    summary && 
+    summary.nonCompliantCount > 0 && 
+    !dismissedWarnings.has(warningKey);
+
+  const handleDismissWarning = () => {
+    setDismissedWarnings(new Set(dismissedWarnings).add(warningKey));
   };
 
   const statusCopy = useMemo(() => {
@@ -270,6 +282,16 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
             </div>
           ) : null}
         </SummaryRow>
+
+        {shouldShowWarning && (
+          <WarningBanner
+            severity={summary.nonCompliantCount === summary.totalCount ? "error" : "warning"}
+            message={`${summary.nonCompliantCount} feature${summary.nonCompliantCount === 1 ? "" : "s"} do not meet Baseline ${summary.target}`}
+            details={`Consider adding fallbacks or adjusting your Baseline target. ${featureSource === "auto" ? "These features were auto-detected from CSS." : ""}`}
+            onDismiss={handleDismissWarning}
+            dismissible={true}
+          />
+        )}
 
         {summary && summary.features.length > 0 && (
           <FilterBar>

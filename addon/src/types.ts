@@ -24,12 +24,14 @@ export interface BaselineStatusSummary {
 export interface BaselineOptions {
   target?: string;
   warnOnNonBaseline?: boolean;
+  disableWarnings?: boolean;
 }
 
 export interface BaselineStoryParameters extends BaselineOptions {
   features?: string[];
   css?: string | string[];
   autoDetect?: boolean;
+  ignoreWarnings?: boolean;
 }
 
 export interface BaselineSummaryEventPayload {
