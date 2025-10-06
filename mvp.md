@@ -158,21 +158,64 @@ export default {
 - [x] Build CSS parser using PostCSS
 - [x] Create feature detection rules
 - [x] Map CSS features to web-features IDs
-- [ ] Handle styled-components/CSS-in-JS (out of scope for MVP)
-- [ ] Add caching layer (pending - Task 5)
 - [x] Test with real components
+- [ ] Handle styled-components/CSS-in-JS (deferred - out of MVP scope)
+- [ ] Add caching layer (deferred - optimization phase)
 
 **Deliverable:** Automatic CSS feature detection ✅
 
-### **Phase 3: Enhanced UI** - Week 3
-- [ ] Build compatibility matrix view
-- [ ] Add filtering/search in panel
-- [ ] Create toolbar for filtering stories
-- [ ] Add warning system for non-Baseline features
-- [ ] Improve badge design and placement
-- [ ] Add export functionality
+### **Phase 3: Enhanced UI** - Week 3 ✅ COMPLETED
 
-**Deliverable:** Full-featured UI
+#### **3.1: Compatibility Matrix View** ✅
+- [x] Design matrix component layout (browsers × features grid)
+- [x] Render color-coded cells (supported/not supported/partial)
+- [x] Add tooltips showing version numbers
+- [x] Make matrix collapsible/expandable
+- [x] Add "Copy as Markdown" button for matrix
+- [x] Fetch browser support data from web-features (placeholder implementation)
+
+#### **3.2: Panel Filtering & Search** ✅
+- [x] Add search input to filter features by name
+- [x] Implement filter by support level (widely/newly/not)
+- [x] Add "Show only non-Baseline" toggle
+- [x] Add "Clear filters" button
+- [x] Show result count when filters active
+- [ ] Persist filter state in URL params (deferred - nice-to-have)
+
+#### **3.3: Toolbar Integration** ✅
+- [x] Create toolbar dropdown for Baseline target selection
+- [x] Sync toolbar state with panel state (via globals)
+- [x] Show current target in toolbar
+- [ ] Add "Filter stories by Baseline" toggle (deferred - complex feature)
+- [ ] Implement story filtering logic (deferred - requires story tree manipulation)
+- [ ] Show filtered story count in toolbar badge (deferred)
+
+#### **3.4: Warning System** ✅
+- [x] Add warning banner when non-Baseline features detected
+- [x] Show dismissible notification in panel
+- [x] Add "Ignore this warning" per-story option
+- [x] Implement severity levels (error/warning/info)
+- [x] Add configuration to disable warnings globally
+- [x] Log warnings to browser console in dev mode
+
+#### **3.5: Badge Improvements** ✅ (Partially - badge removed from preview)
+- [x] Redesign badge with better visual hierarchy
+- [x] Add animated transition when status changes
+- [x] Show feature count in badge
+- [ ] Badge removed from story preview (React context issues)
+- [ ] All badge functionality moved to panel
+- [ ] Support custom badge positioning via config (N/A)
+- [ ] Add dark mode support (inherits from Storybook theme)
+
+#### **3.6: Export Functionality** ✅
+- [x] Export single story report as JSON
+- [x] Generate HTML report with embedded styles
+- [x] Add "Copy to clipboard" for JSON
+- [x] Create downloadable CSV for spreadsheet analysis
+- [x] Add export button to panel header
+- [ ] Export all stories report as JSON (deferred - requires story iteration)
+
+**Deliverable:** Full-featured UI with filtering, warnings, and export ✅
 
 ### **Phase 4: Polish & Documentation** - Week 4
 - [ ] Write comprehensive README
@@ -317,11 +360,12 @@ export default {
 2. ~~**Set Up Project**~~ ✅ - Initialize addon with Storybook Addon Kit
 3. ~~**Spike: Feature Detection**~~ ✅ - Prototype CSS parsing (1-2 hours)
 4. ~~**Build MVP**~~ ✅ - Focus on Phase 1 features first
-5. **Add Caching & Performance** 🔄 - Task 5: Implement caching layer and config toggles
-6. **Test with Real Components** - Use popular libraries (MUI, Chakra UI)
-7. **Polish UI** - Phase 3 enhancements (filtering, matrix view, export)
-8. **Documentation & Demo** - Phase 4 deliverables
-9. **Iterate** - Gather feedback, refine UX
+5. ~~**Build Phase 2**~~ ✅ - CSS detection with PostCSS
+6. ~~**Build Phase 3**~~ ✅ - Enhanced UI (filtering, matrix, warnings, export, toolbar)
+7. **Phase 4: Documentation** 📝 - Write README, create examples, add demo
+8. **Performance Optimization** 🔄 - Add caching layer, optimize analyzer
+9. **Test with Real Components** - Use popular libraries (MUI, Chakra UI)
+10. **Publish to npm** 📦 - Package and release addon
 
 ---
 
