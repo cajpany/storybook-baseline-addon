@@ -95,20 +95,9 @@ function BaselineDecorator({
 
   channel.emit(EVENTS.SUMMARY, payload);
 
-  const storyElement = storyFn(context);
-
-  return React.createElement(
-    React.Fragment,
-    null,
-    React.createElement(BaselineBadge, {
-      summary,
-      target,
-      annotatedCount: annotatedFeatures.length,
-      detectedCount,
-      source,
-    }),
-    storyElement,
-  );
+  // Return story without badge - badge rendering in preview causes React context issues
+  // Badge information is available in the panel instead
+  return storyFn(context);
 }
 
 export const withBaseline = (
