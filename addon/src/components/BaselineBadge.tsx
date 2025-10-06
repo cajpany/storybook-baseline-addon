@@ -1,10 +1,15 @@
-import React from "react";
-import { styled } from "storybook/theming";
+import React, { useState } from "react";
+import { styled, keyframes } from "storybook/theming";
 
 import { BADGE_ELEMENT_ID } from "../constants";
 import type { BaselineStatusSummary } from "../types";
 
-const Wrapper = styled.div(({ theme }) => {
+const fadeIn = keyframes({
+  from: { opacity: 0, transform: "translateY(-4px)" },
+  to: { opacity: 1, transform: "translateY(0)" },
+});
+
+const Wrapper = styled.div<{ clickable?: boolean }>(({ theme, clickable }) => {
   const layoutMargin = theme?.layoutMargin ?? 16;
   const borderRadius = theme?.appBorderRadius ?? 4;
   const borderColor = theme?.appBorderColor ?? "rgba(0, 0, 0, 0.1)";
@@ -25,11 +30,23 @@ const Wrapper = styled.div(({ theme }) => {
     marginBottom: layoutMargin,
     fontFamily,
     flexWrap: "wrap",
+    cursor: clickable ? "pointer" : "default",
+    transition: "all 0.2s ease",
+    animation: `${fadeIn} 0.3s ease`,
+    "&:hover": clickable ? {
+      borderColor: theme?.color?.secondary,
+      boxShadow: `0 2px 8px ${theme?.color?.secondary}20`,
+    } : {},
   };
 });
 
-const StatusChip = styled.span<{ tone: "positive" | "warning" | "critical" }>(
-  ({ theme, tone }) => {
+const pulse = keyframes({
+  "0%, 100%": { transform: "scale(1)" },
+  "50%": { transform: "scale(1.05)" },
+});
+
+const StatusChip = styled.span<{ tone: "positive" | "warning" | "critical"; animated?: boolean }>(
+  ({ theme, tone, animated }) => {
     const tones = {
       positive: {
         background: theme?.color?.positive ?? "#2f9e44",
@@ -59,6 +76,8 @@ const StatusChip = styled.span<{ tone: "positive" | "warning" | "critical" }>(
       letterSpacing: 0.4,
       backgroundColor: palette.background,
       color: palette.color,
+      transition: "all 0.3s ease",
+      animation: animated ? `${pulse} 2s ease-in-out infinite` : "none",
     };
   },
 );
@@ -73,6 +92,15 @@ const Details = styled.div({
 const Note = styled.span(({ theme }) => ({
   fontSize: 12,
   color: theme?.color?.mediumdark ?? "#5c5f66",
+}));
+
+const FeatureCount = styled.span(({ theme }) => ({
+  fontSize: 11,
+  fontWeight: 600,
+  color: theme?.color?.mediumdark ?? "#5c5f66",
+  padding: "2px 6px",
+  borderRadius: 999,
+  backgroundColor: theme?.background?.hoverable ?? "#f5f5f5",
 }));
 
 interface BaselineBadgeProps {
@@ -145,13 +173,38 @@ export const BaselineBadge: React.FC<BaselineBadgeProps> = ({
   detectedCount,
   source,
 }) => {
+  const [isAnimating, setIsAnimating] = useState(false);
   const copy = getBadgeCopy(summary, target, annotatedCount, detectedCount, source);
+  const featureCount = summary?.totalCount ?? annotatedCount + detectedCount;
+
+  const handleClick = () => {
+    const panel = document.querySelector('[data-panel-id="baseline"]');
+    if (panel) {
+      panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      setIsAnimating(true);
+      setTimeout(() => setIsAnimating(false), 2000);
+    }
+  };
 
   return (
-    <Wrapper id={BADGE_ELEMENT_ID}>
-      <StatusChip tone={copy.tone}>{copy.label}</StatusChip>
+    <Wrapper 
+      id={BADGE_ELEMENT_ID} 
+      clickable={true}
+      onClick={handleClick}
+      title="Click to view details in Baseline panel"
+    >
+      <StatusChip tone={copy.tone} animated={isAnimating}>
+        {copy.label}
+      </StatusChip>
       <Details>
-        <span>{copy.detail}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span>{copy.detail}</span>
+          {featureCount > 0 && (
+            <FeatureCount title={`${featureCount} feature${featureCount === 1 ? "" : "s"} analyzed`}>
+              {featureCount} {featureCount === 1 ? "feature" : "features"}
+            </FeatureCount>
+          )}
+        </div>
         {copy.hint ? <Note>{copy.hint}</Note> : null}
       </Details>
     </Wrapper>

@@ -257,7 +257,7 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
   }
 
   return (
-    <AddonPanel active={active}>
+    <AddonPanel active={active} data-panel-id="baseline">
       <PanelLayout>
         <SummaryRow>
           <div>
