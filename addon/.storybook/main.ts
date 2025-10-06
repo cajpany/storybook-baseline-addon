@@ -1,7 +1,11 @@
 import { defineMain } from "@storybook/react-vite/node";
 
 const config = defineMain({
-  stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)", "./.storybook/stories/**/*.stories.@(js|jsx|ts|tsx)"],
+  stories: [
+    "../src/**/*.mdx", 
+    "../src/**/*.stories.@(js|jsx|ts|tsx)",
+    "./stories/**/*.stories.@(js|jsx|ts|tsx)"
+  ],
   addons: ["@storybook/addon-docs", "./local-preset.cjs"],
   framework: "@storybook/react-vite",
   viteFinal: async (config) => {
