@@ -1,8 +1,9 @@
-import React, { memo, useMemo } from "react";
+import React, { memo, useMemo, useState } from "react";
 import { AddonPanel } from "storybook/internal/components";
 import { Placeholder } from "storybook/internal/components";
 import { useChannel } from "storybook/manager-api";
 import { styled, useTheme } from "storybook/theming";
+import { SearchIcon, CloseIcon } from "@storybook/icons";
 
 import { EVENTS } from "../constants";
 import type { BaselineFeatureUsage, BaselineSummaryEventPayload } from "../types";
@@ -16,6 +17,63 @@ const PanelLayout = styled.div(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   gap: theme.layoutMargin,
+}));
+
+const FilterBar = styled.div(({ theme }) => ({
+  display: "flex",
+  gap: theme.layoutMargin / 2,
+  alignItems: "center",
+  padding: `${theme.layoutMargin / 2}px ${theme.layoutMargin}px`,
+  background: theme.background.content,
+  border: `1px solid ${theme.appBorderColor}`,
+  borderRadius: theme.appBorderRadius,
+}));
+
+const SearchInput = styled.input(({ theme }) => ({
+  flex: 1,
+  border: "none",
+  outline: "none",
+  background: "transparent",
+  fontSize: 13,
+  color: theme.color.defaultText,
+  padding: "6px 8px",
+  "::placeholder": {
+    color: theme.color.mediumdark,
+  },
+}));
+
+const FilterButton = styled.button<{ active?: boolean }>(({ theme, active }) => ({
+  border: `1px solid ${active ? theme.color.secondary : theme.appBorderColor}`,
+  borderRadius: theme.appBorderRadius,
+  padding: "6px 12px",
+  fontSize: 12,
+  fontWeight: 600,
+  cursor: "pointer",
+  background: active ? theme.color.secondary : theme.background.content,
+  color: active ? theme.color.lightest : theme.color.defaultText,
+  transition: "all 0.2s ease",
+  "&:hover": {
+    background: active ? theme.color.secondary : theme.background.hoverable,
+  },
+}));
+
+const ClearButton = styled.button(({ theme }) => ({
+  border: "none",
+  background: "transparent",
+  cursor: "pointer",
+  padding: 4,
+  display: "flex",
+  alignItems: "center",
+  color: theme.color.mediumdark,
+  "&:hover": {
+    color: theme.color.defaultText,
+  },
+}));
+
+const ResultCount = styled.div(({ theme }) => ({
+  fontSize: 12,
+  color: theme.color.mediumdark,
+  padding: `0 ${theme.layoutMargin}px`,
 }));
 
 const SummaryRow = styled.div(({ theme }) => ({
@@ -82,9 +140,12 @@ const statusTone = (support: BaselineFeatureUsage["support"]):
 
 export const Panel: React.FC<PanelProps> = memo(({ active }) => {
   const theme = useTheme();
-  const [payload, setPayload] = React.useState<BaselineSummaryEventPayload | null>(
+  const [payload, setPayload] = useState<BaselineSummaryEventPayload | null>(
     null,
   );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [supportFilter, setSupportFilter] = useState<"all" | "widely" | "newly" | "not">("all");
+  const [showOnlyNonBaseline, setShowOnlyNonBaseline] = useState(false);
 
   useChannel({
     [EVENTS.SUMMARY]: (summary: BaselineSummaryEventPayload) => {
@@ -97,6 +158,44 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
   const primaryCount = featureSource === "manual"
     ? payload?.annotatedCount ?? 0
     : payload?.detectedCount ?? 0;
+
+  const filteredFeatures = useMemo(() => {
+    if (!summary?.features) {
+      return [];
+    }
+
+    let filtered = summary.features;
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (feature) =>
+          feature.name.toLowerCase().includes(query) ||
+          feature.featureId.toLowerCase().includes(query),
+      );
+    }
+
+    // Support level filter
+    if (supportFilter !== "all") {
+      filtered = filtered.filter((feature) => feature.support === supportFilter);
+    }
+
+    // Non-Baseline filter
+    if (showOnlyNonBaseline) {
+      filtered = filtered.filter((feature) => feature.support === "not");
+    }
+
+    return filtered;
+  }, [summary?.features, searchQuery, supportFilter, showOnlyNonBaseline]);
+
+  const hasActiveFilters = searchQuery.trim() !== "" || supportFilter !== "all" || showOnlyNonBaseline;
+
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setSupportFilter("all");
+    setShowOnlyNonBaseline(false);
+  };
 
   const statusCopy = useMemo(() => {
     if (!payload) {
@@ -171,7 +270,54 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
           ) : null}
         </SummaryRow>
 
-        {summary && summary.features.length > 0 ? (
+        {summary && summary.features.length > 0 && (
+          <FilterBar>
+            <SearchIcon size={14} />
+            <SearchInput
+              type="text"
+              placeholder="Search features..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <FilterButton
+              active={supportFilter === "widely"}
+              onClick={() => setSupportFilter(supportFilter === "widely" ? "all" : "widely")}
+            >
+              Widely
+            </FilterButton>
+            <FilterButton
+              active={supportFilter === "newly"}
+              onClick={() => setSupportFilter(supportFilter === "newly" ? "all" : "newly")}
+            >
+              Newly
+            </FilterButton>
+            <FilterButton
+              active={supportFilter === "not"}
+              onClick={() => setSupportFilter(supportFilter === "not" ? "all" : "not")}
+            >
+              Not
+            </FilterButton>
+            <FilterButton
+              active={showOnlyNonBaseline}
+              onClick={() => setShowOnlyNonBaseline(!showOnlyNonBaseline)}
+            >
+              Non-Baseline Only
+            </FilterButton>
+            {hasActiveFilters && (
+              <ClearButton onClick={handleClearFilters} title="Clear filters">
+                <CloseIcon size={14} />
+              </ClearButton>
+            )}
+          </FilterBar>
+        )}
+
+        {hasActiveFilters && (
+          <ResultCount>
+            Showing {filteredFeatures.length} of {summary?.features.length ?? 0} features
+          </ResultCount>
+        )}
+
+        {summary && filteredFeatures.length > 0 ? (
           <FeatureTable>
             <thead>
               <tr>
@@ -181,7 +327,7 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
               </tr>
             </thead>
             <tbody>
-              {summary.features.map((feature) => (
+              {filteredFeatures.map((feature) => (
                 <tr key={feature.featureId}>
                   <td>
                     <strong>{feature.name}</strong>
@@ -204,6 +350,10 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
               ))}
             </tbody>
           </FeatureTable>
+        ) : summary && summary.features.length > 0 && filteredFeatures.length === 0 ? (
+          <Placeholder>
+            No features match your filters. <a onClick={handleClearFilters} style={{ cursor: "pointer", textDecoration: "underline" }}>Clear filters</a>
+          </Placeholder>
         ) : (
           <Placeholder>
             No Baseline data yet. Annotate features or adjust the target.
