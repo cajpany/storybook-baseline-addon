@@ -226,14 +226,46 @@ The addon works with **all frameworks** that Storybook supports, but with differ
 | **styled-components** | ✅ | ❌ | ❌ | ❌ | ❌ |
 | **Emotion** | ✅ | ❌ | ❌ | ❌ | ❌ |
 | **Stitches** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Vue SFC styles** | ❌ | 🔮* | ❌ | ❌ | ❌ |
+| **Vue SFC styles** | ❌ | ✅ | ❌ | ❌ | ❌ |
+| **vue-styled-components** | ❌ | ✅ | ❌ | ❌ | ❌ |
+| **Pinceau** | ❌ | ✅ | ❌ | ❌ | ❌ |
 | **Svelte styles** | ❌ | ❌ | ❌ | 🔮* | ❌ |
 
 *🔮 = Planned for future release
 
-### Using with Non-React Frameworks
+### Using with Vue
 
-For Vue, Angular, Svelte, and other frameworks, you can use:
+Vue Single File Components are fully supported:
+
+```typescript
+// Button.stories.ts
+const vueSource = `
+<template>
+  <button class="button">{{ label }}</button>
+</template>
+
+<style scoped>
+.button {
+  display: grid;
+  gap: 1rem;
+  container-type: inline-size;
+}
+</style>
+`;
+
+export const Primary: Story = {
+  parameters: {
+    baseline: {
+      autoDetectVue: true,
+      vueSource,
+    }
+  }
+};
+```
+
+### Using with Angular/Svelte
+
+For Angular, Svelte, and other frameworks, you can use:
 
 **Option 1: Manual annotation**
 ```tsx
@@ -381,6 +413,18 @@ Show warnings when non-Baseline features are detected.
 **Default:** `false`
 
 Suppress all warnings for this story.
+
+#### `autoDetectVue`
+**Type:** `boolean`  
+**Default:** `false`
+
+Enable Vue SFC detection. Requires `vueSource` parameter.
+
+#### `vueSource`
+**Type:** `string`  
+**Default:** `undefined`
+
+Vue Single File Component source code for CSS extraction.
 
 ## Development
 

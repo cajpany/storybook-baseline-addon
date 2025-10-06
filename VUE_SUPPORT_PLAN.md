@@ -1,5 +1,11 @@
 # Vue Support Plan
 
+## ✅ STATUS: PHASES 1-5 COMPLETE!
+
+**Vue support is fully functional and production-ready!**
+
+---
+
 ## Overview
 Add automatic CSS extraction from Vue Single File Components (SFCs) and Vue-compatible CSS-in-JS libraries.
 
@@ -11,10 +17,10 @@ Add automatic CSS extraction from Vue Single File Components (SFCs) and Vue-comp
 - Manual feature annotation
 - Inline CSS detection via `css` parameter
 - All core Baseline features (panel, filtering, warnings, export)
-
-❌ **What Doesn't Work:**
-- Automatic detection from Vue SFC `<style>` blocks
-- Vue-compatible CSS-in-JS libraries (not researched yet)
+- ✅ **Automatic detection from Vue SFC `<style>` blocks**
+- ✅ **Vue SFC scoped and module styles**
+- ✅ **vue-styled-components extractor**
+- ✅ **Pinceau extractor**
 
 ---
 
