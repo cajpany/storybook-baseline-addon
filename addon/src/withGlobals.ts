@@ -10,6 +10,7 @@ import { computeBaselineSummary } from "./baseline";
 import { parseCss, toFeatureUsages } from "./analyzer/css-analyzer";
 import { parseJavaScript, combineExtractedCSS } from "./analyzer/js-analyzer";
 import { parseVueSFC, combineVueCSS } from "./analyzer/vue-analyzer";
+import { parseAngularComponent, combineAngularCSS } from "./analyzer/angular-analyzer";
 import { BaselineBadge } from "./components/BaselineBadge";
 import {
   EVENTS,
@@ -61,8 +62,14 @@ function BaselineDecorator({
     ? detectFeaturesFromVue(parameters.vueSource, context)
     : [];
 
-  // Combine CSS, JS, and Vue detected features
-  const detectedFeatures = [...cssDetectedFeatures, ...jsDetectedFeatures, ...vueDetectedFeatures];
+  // Detect features from Angular components
+  const shouldAutoDetectAngular = parameters?.autoDetectAngular === true;
+  const angularDetectedFeatures = shouldAutoDetectAngular && parameters?.angularSource
+    ? detectFeaturesFromAngular(parameters.angularSource, context)
+    : [];
+
+  // Combine CSS, JS, Vue, and Angular detected features
+  const detectedFeatures = [...cssDetectedFeatures, ...jsDetectedFeatures, ...vueDetectedFeatures, ...angularDetectedFeatures];
   const detectedCount = detectedFeatures.length;
 
   const globalTarget =
@@ -246,6 +253,47 @@ function detectFeaturesFromVue(
     // eslint-disable-next-line no-console
     console.warn(
       `[baseline] Failed to analyze Vue SFC for story ${context.id}:`,
+      error
+    );
+    return [];
+  }
+}
+
+function detectFeaturesFromAngular(
+  angularSource: string,
+  context: StoryContext<Renderer>,
+): string[] {
+  try {
+    const parsed = parseAngularComponent(angularSource, {
+      sourcePath: `${context.title ?? "story"}-${context.id}.ts`,
+    });
+
+    if (parsed.errors.length > 0) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[baseline] Errors parsing Angular component for story ${context.id}:`,
+        parsed.errors
+      );
+    }
+
+    // Combine all extracted CSS
+    const combinedCSS = combineAngularCSS(parsed.extractedStyles);
+
+    if (!combinedCSS.trim()) {
+      return [];
+    }
+
+    // Parse the extracted CSS using existing CSS analyzer
+    const cssParsed = parseCss(combinedCSS, {
+      sourcePath: `${context.title ?? "story"}-${context.id}-angular-extracted`,
+    });
+
+    const usages = toFeatureUsages(cssParsed);
+    return usages.map((usage) => usage.featureId);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[baseline] Failed to analyze Angular component for story ${context.id}:`,
       error
     );
     return [];

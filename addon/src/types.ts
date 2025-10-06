@@ -44,6 +44,8 @@ export interface BaselineStoryParameters extends BaselineOptions {
   cssInJS?: CSSinJSConfig;
   autoDetectVue?: boolean;
   vueSource?: string;
+  autoDetectAngular?: boolean;
+  angularSource?: string;
 }
 
 export interface BaselineSummaryEventPayload {
