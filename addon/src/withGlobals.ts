@@ -82,13 +82,14 @@ const BaselineDecorator: React.FC<BaselineDecoratorProps> = ({
     React.Fragment,
     null,
     React.createElement(BaselineBadge, {
+      key: "baseline-badge",
       summary,
       target,
       annotatedCount: annotatedFeatures.length,
       detectedCount,
       source,
     }),
-    storyElement,
+    React.cloneElement(storyElement as React.ReactElement, { key: "story-content" }),
   );
 };
 
