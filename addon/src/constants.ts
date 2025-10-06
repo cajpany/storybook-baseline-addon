@@ -1,5 +1,6 @@
 export const ADDON_ID = "storybook/baseline";
 export const PANEL_ID = `${ADDON_ID}/panel`;
+export const TOOL_ID = `${ADDON_ID}/tool`;
 
 export const GLOBAL_KEY = "baselineTarget";
 export const PARAM_KEY = "baseline";
