@@ -1,4 +1,4 @@
-import { parse as parseVueSFC } from "@vue/compiler-sfc";
+import { parse as compileVueSFC } from "@vue/compiler-sfc";
 
 export interface VueAnalyzerOptions {
   sourcePath: string;
@@ -37,15 +37,23 @@ export function parseVueSFC(
   };
 
   try {
-    const { descriptor, errors } = parseVueSFC(code, {
+    const { descriptor, errors } = compileVueSFC(code, {
       filename: options.filename || options.sourcePath,
     });
 
     // Log parse errors
     if (errors.length > 0) {
-      errors.forEach((error) => {
-        result.errors.push(`Parse error: ${error.message}`);
+      // Only log the first few errors to avoid console spam
+      const errorsToLog = errors.slice(0, 3);
+      errorsToLog.forEach((error: any) => {
+        const errorMsg = error?.message || error?.msg || String(error);
+        if (errorMsg && errorMsg !== 'undefined') {
+          result.errors.push(`Parse error: ${errorMsg}`);
+        }
       });
+      if (errors.length > 3) {
+        result.errors.push(`... and ${errors.length - 3} more parse errors`);
+      }
     }
 
     // Extract from <style> blocks
