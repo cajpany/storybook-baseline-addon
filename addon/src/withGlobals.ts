@@ -9,6 +9,7 @@ import type {
 import { computeBaselineSummary } from "./baseline";
 import { parseCss, toFeatureUsages } from "./analyzer/css-analyzer";
 import { parseJavaScript, combineExtractedCSS } from "./analyzer/js-analyzer";
+import { parseVueSFC, combineVueCSS } from "./analyzer/vue-analyzer";
 import { BaselineBadge } from "./components/BaselineBadge";
 import {
   EVENTS,
@@ -54,8 +55,14 @@ function BaselineDecorator({
     ? detectFeaturesFromJS(parameters.jsSource, context, cssInJSConfig)
     : [];
 
-  // Combine CSS and JS detected features
-  const detectedFeatures = [...cssDetectedFeatures, ...jsDetectedFeatures];
+  // Detect features from Vue SFC
+  const shouldAutoDetectVue = parameters?.autoDetectVue === true;
+  const vueDetectedFeatures = shouldAutoDetectVue && parameters?.vueSource
+    ? detectFeaturesFromVue(parameters.vueSource, context)
+    : [];
+
+  // Combine CSS, JS, and Vue detected features
+  const detectedFeatures = [...cssDetectedFeatures, ...jsDetectedFeatures, ...vueDetectedFeatures];
   const detectedCount = detectedFeatures.length;
 
   const globalTarget =
@@ -198,6 +205,47 @@ function detectFeaturesFromJS(
     // eslint-disable-next-line no-console
     console.warn(
       `[baseline] Failed to analyze JavaScript for story ${context.id}:`,
+      error
+    );
+    return [];
+  }
+}
+
+function detectFeaturesFromVue(
+  vueSource: string,
+  context: StoryContext<Renderer>,
+): string[] {
+  try {
+    const parsed = parseVueSFC(vueSource, {
+      sourcePath: `${context.title ?? "story"}-${context.id}.vue`,
+    });
+
+    if (parsed.errors.length > 0) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[baseline] Errors parsing Vue SFC for story ${context.id}:`,
+        parsed.errors
+      );
+    }
+
+    // Combine all extracted CSS
+    const combinedCSS = combineVueCSS(parsed.extractedStyles);
+
+    if (!combinedCSS.trim()) {
+      return [];
+    }
+
+    // Parse the extracted CSS using existing CSS analyzer
+    const cssParsed = parseCss(combinedCSS, {
+      sourcePath: `${context.title ?? "story"}-${context.id}-vue-extracted`,
+    });
+
+    const usages = toFeatureUsages(cssParsed);
+    return usages.map((usage) => usage.featureId);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[baseline] Failed to analyze Vue SFC for story ${context.id}:`,
       error
     );
     return [];
