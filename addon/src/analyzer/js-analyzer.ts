@@ -1,6 +1,9 @@
 import { parse } from "@babel/parser";
-import traverse from "@babel/traverse";
+import traverseModule from "@babel/traverse";
 import type { Node } from "@babel/types";
+
+// Handle both ESM and CJS imports
+const traverse = (traverseModule as any).default || traverseModule;
 
 export interface JsAnalyzerOptions {
   sourcePath: string;
