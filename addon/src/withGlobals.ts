@@ -27,10 +27,10 @@ interface BaselineDecoratorProps {
 
 const channel = addons.getChannel();
 
-const BaselineDecorator: React.FC<BaselineDecoratorProps> = ({
+function BaselineDecorator({
   storyFn,
   context,
-}) => {
+}: BaselineDecoratorProps): React.ReactElement {
   const parameters = (context.parameters?.[PARAM_KEY] ?? {}) as
     | BaselineStoryParameters
     | undefined;
@@ -64,39 +64,36 @@ const BaselineDecorator: React.FC<BaselineDecoratorProps> = ({
     ? computeBaselineSummary(featuresForSummary, target)
     : null;
 
-  // Log warnings to console in dev mode
+  // Log warnings to console in dev mode (synchronously)
   const hasNonBaseline = (summary?.nonCompliantCount ?? 0) > 0;
   const shouldWarn = parameters?.warnOnNonBaseline !== false && !parameters?.ignoreWarnings;
   
-  React.useEffect(() => {
-    if (hasNonBaseline && shouldWarn && process.env.NODE_ENV !== "production") {
-      const nonCompliantFeatures = summary?.features.filter(
-        (f) => f.support === "not"
-      ) ?? [];
-      
-      if (nonCompliantFeatures.length > 0) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          `[Baseline] Story "${context.title}/${context.name}" uses ${nonCompliantFeatures.length} non-Baseline feature(s):`,
-          nonCompliantFeatures.map((f) => f.featureId)
-        );
-      }
+  if (hasNonBaseline && shouldWarn && process.env.NODE_ENV !== "production") {
+    const nonCompliantFeatures = summary?.features.filter(
+      (f) => f.support === "not"
+    ) ?? [];
+    
+    if (nonCompliantFeatures.length > 0) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[Baseline] Story "${context.title}/${context.name}" uses ${nonCompliantFeatures.length} non-Baseline feature(s):`,
+        nonCompliantFeatures.map((f) => f.featureId)
+      );
     }
-  }, [hasNonBaseline, shouldWarn, summary, context.title, context.name]);
+  }
 
-  React.useEffect(() => {
-    const payload: BaselineSummaryEventPayload = {
-      storyId: context.id,
-      target,
-      annotatedCount: annotatedFeatures.length,
-      detectedCount,
-      source,
-      features: featuresForSummary,
-      summary,
-    };
+  // Emit payload synchronously
+  const payload: BaselineSummaryEventPayload = {
+    storyId: context.id,
+    target,
+    annotatedCount: annotatedFeatures.length,
+    detectedCount,
+    source,
+    features: featuresForSummary,
+    summary,
+  };
 
-    channel.emit(EVENTS.SUMMARY, payload);
-  }, [context.id, target, annotatedFeatures.length, detectedCount, source, featuresForSummary, summary]);
+  channel.emit(EVENTS.SUMMARY, payload);
 
   const storyElement = storyFn(context);
 
@@ -112,7 +109,7 @@ const BaselineDecorator: React.FC<BaselineDecoratorProps> = ({
     }),
     storyElement,
   );
-};
+}
 
 export const withBaseline = (
   StoryFn: StoryFunction<Renderer>,
