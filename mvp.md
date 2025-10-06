@@ -159,10 +159,24 @@ export default {
 - [x] Create feature detection rules
 - [x] Map CSS features to web-features IDs
 - [x] Test with real components
-- [ ] Handle styled-components/CSS-in-JS (deferred - out of MVP scope)
+- [x] Handle styled-components/CSS-in-JS ✅ **COMPLETED!**
 - [ ] Add caching layer (deferred - optimization phase)
 
 **Deliverable:** Automatic CSS feature detection ✅
+
+### **Phase 2.5: CSS-in-JS Support** - ✅ COMPLETED (All 7 Phases)
+- [x] Research CSS-in-JS libraries and patterns
+- [x] Build JavaScript/TypeScript parser with Babel
+- [x] Extract CSS from styled-components (template literals)
+- [x] Extract CSS from Emotion (object + template syntax)
+- [x] Extract CSS from Stitches (object syntax)
+- [x] Create library-specific extractors
+- [x] Add configuration system (cssInJS options)
+- [x] Create comprehensive example stories (5 stories)
+- [x] Expand feature detection to 40+ CSS features
+- [x] Polish and remove debug logs
+
+**Deliverable:** Full CSS-in-JS support for 3 major libraries ✅
 
 ### **Phase 3: Enhanced UI** - Week 3 ✅ COMPLETED
 
@@ -273,13 +287,15 @@ Component Source Code
 - Lazy load panel data
 - Only analyze visible stories
 
-### **3. CSS-in-JS Support**
+### **3. CSS-in-JS Support** ✅ SOLVED
 **Challenge:** Multiple styling approaches (styled-components, Emotion, CSS Modules)
 **Solution:**
-- Focus on CSS Modules first (most common)
-- Add styled-components support
-- Document limitations
-- Provide manual annotation fallback
+- ✅ Built JavaScript/TypeScript parser with Babel
+- ✅ Added styled-components support (template literals)
+- ✅ Added Emotion support (object + template syntax)
+- ✅ Added Stitches support (object syntax)
+- ✅ Created library-specific extractors
+- ✅ Manual annotation fallback available
 
 ### **4. Baseline Data Updates**
 **Challenge:** web-features package updates frequently
@@ -295,11 +311,15 @@ Component Source Code
 
 ### **✅ In Scope**
 - CSS feature detection (properties, selectors, at-rules)
+- CSS-in-JS support (styled-components, Emotion, Stitches)
+- 40+ modern CSS features (grid, container-queries, oklch, clamp, etc.)
 - Manual feature annotation
 - Baseline badge display
-- Basic panel UI
+- Enhanced panel UI (filtering, search, matrix, export)
 - Configuration system
-- Storybook 7+ support
+- Toolbar integration
+- Warning system
+- Storybook 8+ support
 
 ### **❌ Out of Scope (Future)**
 - JavaScript API detection (complex)

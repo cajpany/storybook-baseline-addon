@@ -1,33 +1,369 @@
 <!-- README START -->
 
-# Storybook Addon Kit ([demo](https://main--601ada52c3d4040021afdc30.chromatic.com))
+# Storybook Addon Baseline
 
-Simplify the creation of Storybook addons
+> Automatically detect and display browser compatibility for your Storybook components using [Baseline](https://web.dev/baseline) data.
 
-- 📝 Live-editing in development
-- ⚛️ React/JSX support
-- 📦 Transpiling and bundling with [tsup](https://tsup.egoist.dev/)
-- 🏷 Plugin metadata
-- 🚢 Release management with [Auto](https://github.com/intuit/auto)
-- 🧺 Boilerplate and sample code
-- 🛄 ESM support
-- 🛂 TypeScript by default with option to eject to JS
+## Features
 
-### Migrating to a later Storybook version
+- 🎯 **Automatic CSS Feature Detection** - Detects 40+ modern CSS features from your components
+- 💅 **CSS-in-JS Support** - Works with styled-components, Emotion, and Stitches
+- 🌐 **Browser Compatibility Matrix** - Shows which browsers support each feature
+- 🎨 **Enhanced UI** - Filtering, search, warnings, and export functionality
+- ⚙️ **Configurable** - Set Baseline targets (2024, 2023, etc.) globally or per-story
+- 📊 **Export Reports** - Export compatibility data as JSON, CSV, or HTML
 
-If you have an existing addon that you want to migrate to support the latest version of Storyboook, you can check out the [addon migration guide](https://storybook.js.org/docs/addons/addon-migration-guide).
+## Installation
 
-## Getting Started
-
-Click the **Use this template** button to get started.
-
-![](https://user-images.githubusercontent.com/321738/125058439-8d9ef880-e0aa-11eb-9211-e6d7be812959.gif)
-
-Clone your repository and install dependencies.
+First, install the package:
 
 ```sh
-npm install
+npm install --save-dev storybook-addon-baseline
+# or
+yarn add -D storybook-addon-baseline
+# or
+pnpm add -D storybook-addon-baseline
 ```
+
+Then, register it as an addon in `.storybook/main.ts`:
+
+```ts
+// .storybook/main.ts
+import type { StorybookConfig } from '@storybook/react-vite';
+
+const config: StorybookConfig = {
+  addons: [
+    '@storybook/addon-docs',
+    'storybook-addon-baseline', // 👈 Add the addon here
+  ],
+};
+
+export default config;
+```
+
+## Usage
+
+### Basic Usage (Automatic CSS Detection)
+
+The addon automatically detects CSS features from your component styles:
+
+```tsx
+// Button.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from './Button';
+
+const meta: Meta<typeof Button> = {
+  component: Button,
+  parameters: {
+    baseline: {
+      target: '2024', // Set Baseline target
+    }
+  }
+};
+
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+export const Primary: Story = {
+  args: {
+    children: 'Click me',
+  },
+  parameters: {
+    baseline: {
+      css: `
+        .button {
+          display: grid;
+          container-type: inline-size;
+          gap: 1rem;
+        }
+      `,
+    }
+  }
+};
+```
+
+### CSS-in-JS Support
+
+The addon supports styled-components, Emotion, and Stitches:
+
+#### Styled-Components
+
+```tsx
+import styled from 'styled-components';
+
+const styledCode = `
+  const Button = styled.button\`
+    display: grid;
+    gap: 1rem;
+    container-type: inline-size;
+    
+    &:has(> .icon) {
+      padding-left: 48px;
+    }
+  \`;
+`;
+
+export const StyledButton: Story = {
+  parameters: {
+    baseline: {
+      autoDetectJS: true,
+      jsSource: styledCode,
+    }
+  }
+};
+```
+
+#### Emotion
+
+```tsx
+/** @jsxImportSource @emotion/react */
+import { css } from '@emotion/react';
+
+const emotionCode = `
+  const styles = css({
+    display: 'flex',
+    gap: '0.5rem',
+    containerType: 'inline-size',
+  });
+`;
+
+export const EmotionButton: Story = {
+  parameters: {
+    baseline: {
+      autoDetectJS: true,
+      jsSource: emotionCode,
+    }
+  }
+};
+```
+
+#### Stitches
+
+```tsx
+import { styled } from '@stitches/react';
+
+const stitchesCode = `
+  const Button = styled('button', {
+    display: 'grid',
+    gap: '1rem',
+    padding: '12px 24px',
+  });
+`;
+
+export const StitchesButton: Story = {
+  parameters: {
+    baseline: {
+      autoDetectJS: true,
+      jsSource: stitchesCode,
+    }
+  }
+};
+```
+
+### Manual Feature Annotation
+
+You can also manually specify features:
+
+```tsx
+export const MyStory: Story = {
+  parameters: {
+    baseline: {
+      features: ['grid', 'container-queries', 'has'],
+      target: '2024',
+    }
+  }
+};
+```
+
+### Configuration Options
+
+Configure the addon globally or per-story:
+
+```tsx
+parameters: {
+  baseline: {
+    // Baseline target year
+    target: '2024' | '2023' | '2022' | 'widely-available' | 'newly-available',
+    
+    // Manual feature list
+    features: ['grid', 'flexbox', 'container-queries'],
+    
+    // Inline CSS for detection
+    css: '.button { display: grid; }',
+    
+    // Enable/disable automatic CSS detection
+    autoDetect: true,
+    
+    // Enable/disable CSS-in-JS detection
+    autoDetectJS: true,
+    
+    // JavaScript source code for CSS-in-JS
+    jsSource: 'const Button = styled.button`...`;',
+    
+    // CSS-in-JS configuration
+    cssInJS: {
+      enabled: true,
+      libraries: ['styled-components', 'emotion', 'stitches', 'all'],
+      showSource: true,
+    },
+    
+    // Warning configuration
+    warnOnNonBaseline: true,
+    ignoreWarnings: false,
+  }
+}
+```
+
+## Features
+
+### Detected CSS Features (40+)
+
+The addon automatically detects these CSS features:
+
+**Layout & Spacing:**
+- `grid`, `flexbox`, `subgrid`
+- `gap`, `flexbox-gap`
+- `aspect-ratio`, `inset`
+- Logical properties (`margin-block`, `padding-inline`, etc.)
+
+**Container Queries:**
+- `container-queries`
+- `container-type`, `container-name`
+
+**Modern Selectors:**
+- `:has()`, `:is()`, `:where()`
+- `:focus-visible`, `:focus-within`
+- `:nth-child(of)`
+
+**Color Functions:**
+- `oklch`, `oklab`
+- `color-mix()`, `color()`
+- `lab()`, `lch()`, `hwb()`
+
+**CSS Functions:**
+- `clamp()`, `min()`, `max()`
+
+**Visual Effects:**
+- `backdrop-filter`, `mix-blend-mode`
+- `css-masks`, `clip-path`
+- `filters`
+
+**Scroll & Interaction:**
+- `scroll-behavior`, `scroll-snap`
+- `overscroll-behavior`
+
+**Transforms & Animation:**
+- `transforms2d`
+- Individual transform properties (`rotate`, `scale`, `translate`)
+
+**At-Rules:**
+- `@container`, `@supports`, `@layer`
+- `@property`, `@scope`, `@starting-style`
+
+**And more!**
+
+### UI Features
+
+- **Baseline Panel** - Shows all detected features with their Baseline status
+- **Browser Compatibility Matrix** - Expandable grid showing browser support
+- **Search & Filtering** - Filter by feature name or support level
+- **Warning System** - Alerts when non-Baseline features are detected
+- **Export** - Download reports as JSON, CSV, or HTML
+- **Toolbar Integration** - Quick Baseline target selection
+
+## API
+
+### Parameters
+
+All parameters are set under the `baseline` namespace:
+
+#### `target`
+**Type:** `string`  
+**Default:** `'2024'`  
+**Options:** `'2024'`, `'2023'`, `'2022'`, `'widely-available'`, `'newly-available'`
+
+Sets the Baseline target for compatibility checking.
+
+#### `features`
+**Type:** `string[]`  
+**Default:** `[]`
+
+Manually specify which web features are used. Takes priority over auto-detection.
+
+#### `css`
+**Type:** `string | string[]`  
+**Default:** `undefined`
+
+Inline CSS code for automatic feature detection.
+
+#### `autoDetect`
+**Type:** `boolean`  
+**Default:** `true`
+
+Enable/disable automatic CSS feature detection.
+
+#### `autoDetectJS`
+**Type:** `boolean`  
+**Default:** `false`
+
+Enable CSS-in-JS detection. Requires `jsSource` parameter.
+
+#### `jsSource`
+**Type:** `string`  
+**Default:** `undefined`
+
+JavaScript/TypeScript source code containing CSS-in-JS styles.
+
+#### `cssInJS`
+**Type:** `CSSinJSConfig`  
+**Default:** `{ enabled: true }`
+
+Configuration for CSS-in-JS detection:
+- `enabled`: Enable/disable CSS-in-JS detection
+- `libraries`: Whitelist specific libraries
+- `showSource`: Display source library in UI
+
+#### `warnOnNonBaseline`
+**Type:** `boolean`  
+**Default:** `true`
+
+Show warnings when non-Baseline features are detected.
+
+#### `ignoreWarnings`
+**Type:** `boolean`  
+**Default:** `false`
+
+Suppress all warnings for this story.
+
+## Development
+
+```sh
+# Install dependencies
+npm install
+
+# Start Storybook in development mode
+npm run storybook
+
+# Build the addon
+npm run build
+
+# Run tests
+npm test
+```
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
+
+## License
+
+MIT
+
+## Credits
+
+- Built with [Storybook Addon Kit](https://github.com/storybookjs/addon-kit)
+- Uses [web-features](https://github.com/web-platform-dx/web-features) data
+- Inspired by [Baseline](https://web.dev/baseline) initiative
 
 <!-- README END -->
 
