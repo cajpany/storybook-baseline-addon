@@ -68,46 +68,49 @@ const BaselineDecorator: React.FC<BaselineDecoratorProps> = ({
   const hasNonBaseline = (summary?.nonCompliantCount ?? 0) > 0;
   const shouldWarn = parameters?.warnOnNonBaseline !== false && !parameters?.ignoreWarnings;
   
-  if (hasNonBaseline && shouldWarn && process.env.NODE_ENV !== "production") {
-    const nonCompliantFeatures = summary?.features.filter(
-      (f) => f.support === "not"
-    ) ?? [];
-    
-    if (nonCompliantFeatures.length > 0) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `[Baseline] Story "${context.title}/${context.name}" uses ${nonCompliantFeatures.length} non-Baseline feature(s):`,
-        nonCompliantFeatures.map((f) => f.featureId)
-      );
+  React.useEffect(() => {
+    if (hasNonBaseline && shouldWarn && process.env.NODE_ENV !== "production") {
+      const nonCompliantFeatures = summary?.features.filter(
+        (f) => f.support === "not"
+      ) ?? [];
+      
+      if (nonCompliantFeatures.length > 0) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[Baseline] Story "${context.title}/${context.name}" uses ${nonCompliantFeatures.length} non-Baseline feature(s):`,
+          nonCompliantFeatures.map((f) => f.featureId)
+        );
+      }
     }
-  }
+  }, [hasNonBaseline, shouldWarn, summary, context.title, context.name]);
+
+  React.useEffect(() => {
+    const payload: BaselineSummaryEventPayload = {
+      storyId: context.id,
+      target,
+      annotatedCount: annotatedFeatures.length,
+      detectedCount,
+      source,
+      features: featuresForSummary,
+      summary,
+    };
+
+    channel.emit(EVENTS.SUMMARY, payload);
+  }, [context.id, target, annotatedFeatures.length, detectedCount, source, featuresForSummary, summary]);
 
   const storyElement = storyFn(context);
-
-  const payload: BaselineSummaryEventPayload = {
-    storyId: context.id,
-    target,
-    annotatedCount: annotatedFeatures.length,
-    detectedCount,
-    source,
-    features: featuresForSummary,
-    summary,
-  };
-
-  channel.emit(EVENTS.SUMMARY, payload);
 
   return React.createElement(
     React.Fragment,
     null,
     React.createElement(BaselineBadge, {
-      key: "baseline-badge",
       summary,
       target,
       annotatedCount: annotatedFeatures.length,
       detectedCount,
       source,
     }),
-    React.cloneElement(storyElement as React.ReactElement, { key: "story-content" }),
+    storyElement,
   );
 };
 
