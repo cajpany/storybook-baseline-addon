@@ -32,6 +32,8 @@ export interface BaselineStoryParameters extends BaselineOptions {
   css?: string | string[];
   autoDetect?: boolean;
   ignoreWarnings?: boolean;
+  autoDetectJS?: boolean;
+  jsSource?: string;
 }
 
 export interface BaselineSummaryEventPayload {

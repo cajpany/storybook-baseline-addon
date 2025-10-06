@@ -8,11 +8,12 @@ import type {
 
 import { computeBaselineSummary } from "./baseline";
 import { parseCss, toFeatureUsages } from "./analyzer/css-analyzer";
+import { parseJavaScript, combineExtractedCSS } from "./analyzer/js-analyzer";
 import { BaselineBadge } from "./components/BaselineBadge";
 import {
-  DEFAULT_BASELINE_TARGET,
   EVENTS,
   GLOBAL_KEY,
+  DEFAULT_BASELINE_TARGET,
   PARAM_KEY,
 } from "./constants";
 import type {
@@ -40,9 +41,18 @@ function BaselineDecorator({
 
   const shouldAutoDetect = parameters?.autoDetect !== false;
   const cssSources = normalizeCssSources(parameters?.css);
-  const detectedFeatures = shouldAutoDetect
+  const cssDetectedFeatures = shouldAutoDetect
     ? detectFeaturesFromCss(cssSources, context)
     : [];
+
+  // Detect features from JavaScript/CSS-in-JS
+  const shouldAutoDetectJS = parameters?.autoDetectJS === true;
+  const jsDetectedFeatures = shouldAutoDetectJS && parameters?.jsSource
+    ? detectFeaturesFromJS(parameters.jsSource, context)
+    : [];
+
+  // Combine CSS and JS detected features
+  const detectedFeatures = [...cssDetectedFeatures, ...jsDetectedFeatures];
   const detectedCount = detectedFeatures.length;
 
   const globalTarget =
@@ -149,4 +159,47 @@ function detectFeaturesFromCss(
   });
 
   return Array.from(detected);
+}
+
+function detectFeaturesFromJS(
+  jsSource: string,
+  context: StoryContext<Renderer>,
+): string[] {
+  try {
+    const parsed = parseJavaScript(jsSource, {
+      sourcePath: `${context.title ?? "story"}-${context.id}.tsx`,
+    });
+
+    if (parsed.errors.length > 0 && process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[baseline] Errors parsing JavaScript for story ${context.id}:`,
+        parsed.errors
+      );
+    }
+
+    // Combine all extracted CSS
+    const combinedCSS = combineExtractedCSS(parsed.extractedStyles);
+
+    if (!combinedCSS.trim()) {
+      return [];
+    }
+
+    // Parse the extracted CSS using existing CSS analyzer
+    const cssParsed = parseCss(combinedCSS, {
+      sourcePath: `${context.title ?? "story"}-${context.id}-js-extracted`,
+    });
+
+    const usages = toFeatureUsages(cssParsed);
+    return usages.map((usage) => usage.featureId);
+  } catch (error) {
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[baseline] Failed to analyze JavaScript for story ${context.id}:`,
+        error
+      );
+    }
+    return [];
+  }
 }
