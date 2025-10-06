@@ -7,8 +7,8 @@
  * Handles vendor prefixes: WebkitTransform -> -webkit-transform
  */
 export function camelToKebab(str: string): string {
-  // Handle vendor prefixes (WebkitTransform -> -webkit-transform)
-  if (/^[A-Z]/.test(str)) {
+  // Handle vendor prefixes (WebkitTransform -> -webkit-transform, msFlexDirection -> -ms-flex-direction)
+  if (/^[A-Z]/.test(str) || /^ms[A-Z]/.test(str)) {
     str = `-${str}`;
   }
 
