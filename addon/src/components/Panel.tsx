@@ -3,12 +3,20 @@ import { AddonPanel } from "storybook/internal/components";
 import { Placeholder } from "storybook/internal/components";
 import { useChannel } from "storybook/manager-api";
 import { styled, useTheme } from "storybook/theming";
-import { SearchIcon, CloseIcon } from "@storybook/icons";
+import { SearchIcon, CloseIcon, DownloadIcon } from "@storybook/icons";
 
 import { EVENTS } from "../constants";
 import type { BaselineFeatureUsage, BaselineSummaryEventPayload } from "../types";
 import { CompatibilityMatrix } from "./CompatibilityMatrix";
 import { WarningBanner } from "./WarningBanner";
+import {
+  prepareExportData,
+  exportAsJSON,
+  exportAsCSV,
+  exportAsHTML,
+  downloadFile,
+  copyToClipboard,
+} from "../utils/exportHelpers";
 
 interface PanelProps {
   active: boolean;
@@ -76,6 +84,63 @@ const ResultCount = styled.div(({ theme }) => ({
   fontSize: 12,
   color: theme.color.mediumdark,
   padding: `0 ${theme.layoutMargin}px`,
+}));
+
+const ExportMenu = styled.div(({ theme }) => ({
+  position: "relative",
+  display: "inline-block",
+}));
+
+const ExportButton = styled.button(({ theme }) => ({
+  border: `1px solid ${theme.appBorderColor}`,
+  borderRadius: theme.appBorderRadius,
+  padding: "6px 12px",
+  fontSize: 12,
+  fontWeight: 600,
+  cursor: "pointer",
+  background: theme.background.content,
+  color: theme.color.defaultText,
+  display: "flex",
+  alignItems: "center",
+  gap: 6,
+  "&:hover": {
+    background: theme.background.hoverable,
+  },
+}));
+
+const ExportDropdown = styled.div(({ theme }) => ({
+  position: "absolute",
+  top: "100%",
+  right: 0,
+  marginTop: 4,
+  background: theme.background.content,
+  border: `1px solid ${theme.appBorderColor}`,
+  borderRadius: theme.appBorderRadius,
+  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+  zIndex: 1000,
+  minWidth: 180,
+}));
+
+const ExportOption = styled.button(({ theme }) => ({
+  width: "100%",
+  border: "none",
+  background: "transparent",
+  padding: "10px 16px",
+  fontSize: 13,
+  textAlign: "left",
+  cursor: "pointer",
+  color: theme.color.defaultText,
+  "&:hover": {
+    background: theme.background.hoverable,
+  },
+  "&:first-of-type": {
+    borderTopLeftRadius: theme.appBorderRadius,
+    borderTopRightRadius: theme.appBorderRadius,
+  },
+  "&:last-of-type": {
+    borderBottomLeftRadius: theme.appBorderRadius,
+    borderBottomRightRadius: theme.appBorderRadius,
+  },
 }));
 
 const SummaryRow = styled.div(({ theme }) => ({
@@ -149,6 +214,7 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
   const [supportFilter, setSupportFilter] = useState<"all" | "widely" | "newly" | "not">("all");
   const [showOnlyNonBaseline, setShowOnlyNonBaseline] = useState(false);
   const [dismissedWarnings, setDismissedWarnings] = useState<Set<string>>(new Set());
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   useChannel({
     [EVENTS.SUMMARY]: (summary: BaselineSummaryEventPayload) => {
@@ -210,6 +276,41 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
     setDismissedWarnings(new Set(dismissedWarnings).add(warningKey));
   };
 
+  const handleExport = (format: "json" | "csv" | "html" | "copy") => {
+    if (!payload) return;
+
+    const exportData = prepareExportData(payload);
+    const storyName = payload.storyId.replace(/[^a-z0-9]/gi, "-").toLowerCase();
+    const timestamp = new Date().toISOString().split("T")[0];
+
+    switch (format) {
+      case "json": {
+        const content = exportAsJSON(exportData);
+        downloadFile(content, `baseline-${storyName}-${timestamp}.json`, "application/json");
+        break;
+      }
+      case "csv": {
+        const content = exportAsCSV(exportData);
+        downloadFile(content, `baseline-${storyName}-${timestamp}.csv`, "text/csv");
+        break;
+      }
+      case "html": {
+        const content = exportAsHTML(exportData);
+        downloadFile(content, `baseline-${storyName}-${timestamp}.html`, "text/html");
+        break;
+      }
+      case "copy": {
+        const content = exportAsJSON(exportData);
+        copyToClipboard(content).catch((err) => {
+          console.error("Failed to copy to clipboard:", err);
+        });
+        break;
+      }
+    }
+
+    setShowExportMenu(false);
+  };
+
   const statusCopy = useMemo(() => {
     if (!payload) {
       return {
@@ -266,21 +367,47 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
               {statusCopy.subline}
             </div>
           </div>
-          {payload ? (
-            <div style={{ textAlign: "right", minWidth: 160 }}>
-              <div style={{ fontWeight: 600, fontSize: 12 }}>Story</div>
-              <div style={{ fontSize: 12 }}>{payload.storyId}</div>
-              <div style={{ fontSize: 12 }}>
-                Target: <strong>{payload.target}</strong>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            {payload && (
+              <div style={{ textAlign: "right", minWidth: 160 }}>
+                <div style={{ fontWeight: 600, fontSize: 12 }}>Story</div>
+                <div style={{ fontSize: 12 }}>{payload.storyId}</div>
+                <div style={{ fontSize: 12 }}>
+                  Target: <strong>{payload.target}</strong>
+                </div>
+                <div style={{ fontSize: 12 }}>
+                  Source: <strong>{featureSource}</strong>
+                </div>
+                <div style={{ fontSize: 12 }}>
+                  Features considered: <strong>{primaryCount}</strong>
+                </div>
               </div>
-              <div style={{ fontSize: 12 }}>
-                Source: <strong>{featureSource}</strong>
-              </div>
-              <div style={{ fontSize: 12 }}>
-                Features considered: <strong>{primaryCount}</strong>
-              </div>
-            </div>
-          ) : null}
+            )}
+            {payload && summary && (
+              <ExportMenu>
+                <ExportButton onClick={() => setShowExportMenu(!showExportMenu)}>
+                  <DownloadIcon size={14} />
+                  Export
+                </ExportButton>
+                {showExportMenu && (
+                  <ExportDropdown>
+                    <ExportOption onClick={() => handleExport("json")}>
+                      Export as JSON
+                    </ExportOption>
+                    <ExportOption onClick={() => handleExport("csv")}>
+                      Export as CSV
+                    </ExportOption>
+                    <ExportOption onClick={() => handleExport("html")}>
+                      Export as HTML
+                    </ExportOption>
+                    <ExportOption onClick={() => handleExport("copy")}>
+                      Copy JSON to Clipboard
+                    </ExportOption>
+                  </ExportDropdown>
+                )}
+              </ExportMenu>
+            )}
+          </div>
         </SummaryRow>
 
         {shouldShowWarning && (
