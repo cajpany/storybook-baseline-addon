@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-01-XX
+
+### Added - Angular Support 🅰️
+
+**Angular Component Support:**
+- Angular component parser using existing Babel parser
+- Automatic CSS extraction from `@Component` decorator `styles` array
+- Support for multiple style strings
+- ViewEncapsulation mode detection (Emulated, None, ShadowDom)
+- Template literal support in styles
+- `styleUrls` detection with warnings
+- `autoDetectAngular` and `angularSource` parameters
+
+**Example Stories:**
+- 2 Angular example stories (AngularButton, AngularCard)
+- 5 total Angular stories demonstrating modern CSS features
+
+**Documentation:**
+- Complete Angular support documentation in README
+- ANGULAR_PATTERNS.md with implementation details
+- ANGULAR_SUPPORT_PLAN.md with comprehensive planning
+- Framework compatibility matrix updated
+
+### Changed
+
+- Updated framework compatibility matrix (Angular now fully supported)
+- Improved error handling in all parsers
+- Enhanced console warnings for unsupported features
+
+### Fixed
+
+- Babel traverse import compatibility for ESM/CJS modules
+
 ## [0.3.0] - 2025-01-XX
 
 ### Added - Vue Support 🎉

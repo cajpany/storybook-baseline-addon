@@ -12,7 +12,9 @@
 ## Features
 
 - 🎯 **Automatic CSS Feature Detection** - Detects 40+ modern CSS features from your components
-- 💅 **CSS-in-JS Support** - Works with styled-components, Emotion, and Stitches
+- 💅 **CSS-in-JS Support** - Works with styled-components, Emotion, and Stitches (React)
+- 🎨 **Vue SFC Support** - Extracts CSS from Vue Single File Components
+- 🅰️ **Angular Support** - Extracts CSS from Angular component styles
 - 🌐 **Browser Compatibility Matrix** - Shows which browsers support each feature
 - 🎨 **Enhanced UI** - Filtering, search, warnings, and export functionality
 - ⚙️ **Configurable** - Set Baseline targets (2024, 2023, etc.) globally or per-story
@@ -234,6 +236,7 @@ The addon works with **all frameworks** that Storybook supports, but with differ
 | **Vue SFC styles** | ❌ | ✅ | ❌ | ❌ | ❌ |
 | **vue-styled-components** | ❌ | ✅ | ❌ | ❌ | ❌ |
 | **Pinceau** | ❌ | ✅ | ❌ | ❌ | ❌ |
+| **Angular Component styles** | ❌ | ❌ | ✅ | ❌ | ❌ |
 | **Svelte styles** | ❌ | ❌ | ❌ | 🔮* | ❌ |
 
 *🔮 = Planned for future release
@@ -297,6 +300,52 @@ parameters: {
 ```
 
 Both options work perfectly and provide full Baseline detection!
+
+### Using with Angular
+
+Angular components are fully supported:
+
+```typescript
+// Button.stories.ts
+const angularSource = `
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-button',
+  template: '<button class="button">{{ label }}</button>',
+  styles: [\`
+    .button {
+      display: grid;
+      gap: 1rem;
+      container-type: inline-size;
+      aspect-ratio: 16 / 9;
+    }
+  \`]
+})
+export class ButtonComponent {
+  @Input() label: string = 'Click me';
+}
+`;
+
+export const Primary: Story = {
+  parameters: {
+    baseline: {
+      autoDetectAngular: true,
+      angularSource,
+    }
+  }
+};
+```
+
+**Supports:**
+- Component `styles` array
+- Multiple style strings
+- ViewEncapsulation modes (Emulated, None, ShadowDom)
+- Template literals in styles
+
+**Limitations:**
+- `styleUrls` not supported (use inline `styles` or manual annotation)
+- Angular-specific selectors (`:host`, `::ng-deep`) are extracted but may not be analyzed
 
 ## Features
 
