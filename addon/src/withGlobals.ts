@@ -78,7 +78,7 @@ function BaselineDecorator({
   const hasNonBaseline = (summary?.nonCompliantCount ?? 0) > 0;
   const shouldWarn = parameters?.warnOnNonBaseline !== false && !parameters?.ignoreWarnings;
   
-  if (hasNonBaseline && shouldWarn && process.env.NODE_ENV !== "production") {
+  if (hasNonBaseline && shouldWarn) {
     const nonCompliantFeatures = summary?.features.filter(
       (f) => f.support === "not"
     ) ?? [];
@@ -148,13 +148,11 @@ function detectFeaturesFromCss(
         detected.add(usage.featureId);
       }
     } catch (error) {
-      if (process.env.NODE_ENV !== "production") {
-        // eslint-disable-next-line no-console -- baseline analyzer diagnostics
-        console.warn(
-          `[baseline] Failed to analyze CSS for story ${context.id}:`,
-          error,
-        );
-      }
+      // eslint-disable-next-line no-console -- baseline analyzer diagnostics
+      console.warn(
+        `[baseline] Failed to analyze CSS for story ${context.id}:`,
+        error,
+      );
     }
   });
 
@@ -170,7 +168,7 @@ function detectFeaturesFromJS(
       sourcePath: `${context.title ?? "story"}-${context.id}.tsx`,
     });
 
-    if (parsed.errors.length > 0 && process.env.NODE_ENV !== "production") {
+    if (parsed.errors.length > 0) {
       // eslint-disable-next-line no-console
       console.warn(
         `[baseline] Errors parsing JavaScript for story ${context.id}:`,
@@ -193,13 +191,11 @@ function detectFeaturesFromJS(
     const usages = toFeatureUsages(cssParsed);
     return usages.map((usage) => usage.featureId);
   } catch (error) {
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `[baseline] Failed to analyze JavaScript for story ${context.id}:`,
-        error
-      );
-    }
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[baseline] Failed to analyze JavaScript for story ${context.id}:`,
+      error
+    );
     return [];
   }
 }
