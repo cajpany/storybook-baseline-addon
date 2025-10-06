@@ -130,18 +130,66 @@ const featureRegistry = (featuresData as { features: Record<string, FeatureRegis
   .features;
 
 const DECLARATION_FEATURES: Record<string, string> = {
+  // Container Queries
   "container": "container-queries",
   "container-type": "container-queries",
   "container-name": "container-queries",
+  
+  // Layout
+  "gap": "flexbox-gap",
+  "row-gap": "flexbox-gap",
+  "column-gap": "flexbox-gap",
+  "aspect-ratio": "aspect-ratio",
+  "inset": "inset",
+  "inset-block": "inset",
+  "inset-inline": "inset",
+  
+  // Typography
   "font-size-adjust": "font-size-adjust",
   "font-variant-alternates": "font-variant-alternates",
+  
+  // Visual Effects
   "backdrop-filter": "backdrop-filter",
+  "mix-blend-mode": "mix-blend-mode",
+  "background-blend-mode": "mix-blend-mode",
+  
+  // Scroll
+  "scroll-behavior": "scroll-behavior",
+  "scroll-snap-type": "scroll-snap",
+  "scroll-snap-align": "scroll-snap",
+  "overscroll-behavior": "overscroll-behavior",
+  
+  // Logical Properties
+  "margin-block": "logical-properties",
+  "margin-inline": "logical-properties",
+  "padding-block": "logical-properties",
+  "padding-inline": "logical-properties",
+  "border-block": "logical-properties",
+  "border-inline": "logical-properties",
+  
+  // Masking
+  "mask": "css-masks",
+  "mask-image": "css-masks",
+  "clip-path": "css-masks",
+  
+  // Filters
+  "filter": "filters",
+  
+  // Transforms
+  "transform": "transforms2d",
+  "transform-origin": "transforms2d",
+  "rotate": "individual-transform-properties",
+  "scale": "individual-transform-properties",
+  "translate": "individual-transform-properties",
 };
 
 const AT_RULE_FEATURES: Record<string, string> = {
   "container": "container-queries",
   "supports": "supports",
   "layer": "cascade-layers",
+  "property": "at-property",
+  "scope": "css-cascade-scope",
+  "starting-style": "starting-style",
 };
 
 const declarationRules: FeatureMappingRule[] = [
@@ -174,6 +222,40 @@ const declarationRules: FeatureMappingRule[] = [
     }
     return null;
   },
+  // CSS Functions
+  (feature) => {
+    const value = feature.value?.toLowerCase() ?? "";
+    if (value.includes("clamp(")) {
+      return "css-math-functions";
+    }
+    if (value.includes("min(") || value.includes("max(")) {
+      return "css-math-functions";
+    }
+    if (value.includes("color-mix(")) {
+      return "color-mix";
+    }
+    if (value.includes("color(")) {
+      return "css-color-function";
+    }
+    if (value.includes("lab(") || value.includes("lch(")) {
+      return "lab-colors";
+    }
+    if (value.includes("oklab(") || value.includes("oklch(")) {
+      return "oklab-oklch";
+    }
+    if (value.includes("hwb(")) {
+      return "hwb-colors";
+    }
+    return null;
+  },
+  // Nesting indicator (& selector in value)
+  (feature) => {
+    const value = feature.value?.toLowerCase() ?? "";
+    if (value.includes("&")) {
+      return "css-nesting";
+    }
+    return null;
+  },
 ];
 
 const atRuleRules: FeatureMappingRule[] = [
@@ -186,19 +268,33 @@ const selectorRules: FeatureMappingRule[] = [
     if (selector.includes(":has(")) {
       return "has";
     }
-    return null;
-  },
-  (feature) => {
-    const selector = feature.name.toLowerCase();
     if (selector.includes(":is(")) {
       return "is";
     }
-    return null;
-  },
-  (feature) => {
-    const selector = feature.name.toLowerCase();
     if (selector.includes(":where(")) {
       return "where";
+    }
+    if (selector.includes(":focus-visible")) {
+      return "focus-visible";
+    }
+    if (selector.includes(":focus-within")) {
+      return "focus-within";
+    }
+    if (selector.includes("::backdrop")) {
+      return "dialog";
+    }
+    if (selector.includes("::part(")) {
+      return "css-shadow-parts";
+    }
+    if (selector.includes(":not(")) {
+      return "css-not-sel-list";
+    }
+    if (selector.includes(":nth-child(") && selector.includes("of ")) {
+      return "css-nth-child-of";
+    }
+    // CSS Nesting (& in selector)
+    if (selector.includes("&")) {
+      return "css-nesting";
     }
     return null;
   },
