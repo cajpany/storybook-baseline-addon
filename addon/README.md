@@ -214,6 +214,53 @@ parameters: {
 }
 ```
 
+## Framework Compatibility
+
+The addon works with **all frameworks** that Storybook supports, but with different levels of automatic detection:
+
+| Feature | React | Vue | Angular | Svelte | Web Components |
+|---------|-------|-----|---------|--------|----------------|
+| **Manual annotation** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Inline CSS detection** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **CSS file detection** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **styled-components** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Emotion** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Stitches** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Vue SFC styles** | ❌ | 🔮* | ❌ | ❌ | ❌ |
+| **Svelte styles** | ❌ | ❌ | ❌ | 🔮* | ❌ |
+
+*🔮 = Planned for future release
+
+### Using with Non-React Frameworks
+
+For Vue, Angular, Svelte, and other frameworks, you can use:
+
+**Option 1: Manual annotation**
+```tsx
+parameters: {
+  baseline: {
+    features: ['grid', 'container-queries', 'flexbox-gap'],
+  }
+}
+```
+
+**Option 2: Inline CSS**
+```tsx
+parameters: {
+  baseline: {
+    css: `
+      .button {
+        display: grid;
+        gap: 1rem;
+        container-type: inline-size;
+      }
+    `,
+  }
+}
+```
+
+Both options work perfectly and provide full Baseline detection!
+
 ## Features
 
 ### Detected CSS Features (40+)
