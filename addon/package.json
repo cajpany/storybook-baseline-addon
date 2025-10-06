@@ -1,17 +1,35 @@
 {
   "name": "storybook-addon-baseline",
-  "version": "0.1.0",
-  "description": "Storybook addon for displaying Baseline compatibility metadata",
+  "version": "0.3.0",
+  "description": "Automatically detect and display browser compatibility for your Storybook components using Baseline data. Supports React, Vue, and all frameworks with CSS-in-JS detection.",
   "keywords": [
-    "storybook-addons"
+    "storybook",
+    "storybook-addons",
+    "baseline",
+    "browser-compatibility",
+    "web-features",
+    "css-detection",
+    "css-in-js",
+    "styled-components",
+    "emotion",
+    "stitches",
+    "vue",
+    "react",
+    "accessibility",
+    "a11y",
+    "web-standards"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/storybookjs/storybook-addon-kit"
+    "url": "https://github.com/YOUR_USERNAME/storybook-addon-baseline"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/storybook-addon-baseline#readme",
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/storybook-addon-baseline/issues"
   },
   "type": "module",
   "license": "MIT",
-  "author": "Baseline Hackathon Team",
+  "author": "Your Name <your.email@example.com>",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -88,9 +106,14 @@
     ]
   },
   "storybook": {
-    "displayName": "Addon Kit",
+    "displayName": "Baseline",
     "supportedFrameworks": [
-      "supported-frameworks"
+      "react",
+      "vue",
+      "angular",
+      "web-components",
+      "html",
+      "svelte"
     ],
     "icon": "https://user-images.githubusercontent.com/321738/63501763-88dbf600-c4cc-11e9-96cd-94adadc2fd72.png"
   }
