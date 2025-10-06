@@ -50,15 +50,6 @@ function BaselineDecorator({
   const cssInJSEnabled = cssInJSConfig.enabled !== false;
   const shouldAutoDetectJS = (parameters?.autoDetectJS === true) && cssInJSEnabled;
   
-  // Debug logging
-  if (shouldAutoDetectJS) {
-    console.log('[Baseline] JS auto-detection enabled for story:', context.id);
-    console.log('[Baseline] jsSource length:', parameters?.jsSource?.length || 0);
-    if (cssInJSConfig.libraries) {
-      console.log('[Baseline] Enabled libraries:', cssInJSConfig.libraries);
-    }
-  }
-  
   const jsDetectedFeatures = shouldAutoDetectJS && parameters?.jsSource
     ? detectFeaturesFromJS(parameters.jsSource, context, cssInJSConfig)
     : [];
@@ -66,10 +57,6 @@ function BaselineDecorator({
   // Combine CSS and JS detected features
   const detectedFeatures = [...cssDetectedFeatures, ...jsDetectedFeatures];
   const detectedCount = detectedFeatures.length;
-  
-  if (jsDetectedFeatures.length > 0) {
-    console.log('[Baseline] JS detected features:', jsDetectedFeatures);
-  }
 
   const globalTarget =
     typeof context.globals?.[GLOBAL_KEY] === "string"

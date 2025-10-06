@@ -95,7 +95,6 @@ export function computeBaselineSummary(
     const rawEntry = features[featureId] as unknown;
 
     if (!isFeatureEntry(rawEntry) || rawEntry.kind !== "feature") {
-      console.warn(`[Baseline] Feature not found in web-features: ${featureId}`);
       return {
         featureId,
         name: featureId,
@@ -111,8 +110,6 @@ export function computeBaselineSummary(
     const browsers = rawEntry.status?.support
       ? Object.keys(rawEntry.status.support ?? {})
       : [];
-
-    console.log(`[Baseline] ${featureId}: baseline=${baseline}, support=${support}, browsers=${browsers.length}`);
 
     return {
       featureId,
