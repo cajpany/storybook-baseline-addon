@@ -3,8 +3,8 @@
   "version": "0.4.0",
   "description": "Automatically detect and display browser compatibility for your Storybook components using Baseline data. Supports React, Vue, Angular, and all frameworks with CSS-in-JS detection.",
   "keywords": [
-    "storybook",
     "storybook-addons",
+    "storybook",
     "baseline",
     "browser-compatibility",
     "web-features",
