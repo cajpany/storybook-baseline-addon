@@ -7,6 +7,7 @@ import { SearchIcon, CloseIcon } from "@storybook/icons";
 
 import { EVENTS } from "../constants";
 import type { BaselineFeatureUsage, BaselineSummaryEventPayload } from "../types";
+import { CompatibilityMatrix } from "./CompatibilityMatrix";
 
 interface PanelProps {
   active: boolean;
@@ -315,6 +316,10 @@ export const Panel: React.FC<PanelProps> = memo(({ active }) => {
           <ResultCount>
             Showing {filteredFeatures.length} of {summary?.features.length ?? 0} features
           </ResultCount>
+        )}
+
+        {summary && summary.features.length > 0 && (
+          <CompatibilityMatrix features={filteredFeatures.length > 0 ? filteredFeatures : summary.features} />
         )}
 
         {summary && filteredFeatures.length > 0 ? (
