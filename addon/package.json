@@ -43,10 +43,14 @@
   },
   "dependencies": {
     "@storybook/icons": "^1.4.0",
+    "@vue/compiler-sfc": "^3.5.22",
     "postcss": "^8.5.6",
     "web-features": "^3.3.0"
   },
   "devDependencies": {
+    "@babel/parser": "^7.28.4",
+    "@babel/traverse": "^7.28.4",
+    "@babel/types": "^7.28.4",
     "@storybook/addon-docs": "^9.1.10",
     "@storybook/react-vite": "^9.1.10",
     "@types/node": "^22.7.7",
