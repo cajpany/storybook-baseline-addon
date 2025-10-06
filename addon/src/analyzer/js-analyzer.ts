@@ -8,6 +8,8 @@ const traverse = (traverseModule as any).default || traverseModule;
 export interface JsAnalyzerOptions {
   sourcePath: string;
   sourceType?: "module" | "script";
+  libraries?: Array<"styled-components" | "emotion" | "stitches" | "all">;
+  ignoreInterpolations?: boolean;
 }
 
 export interface ExtractedCSS {

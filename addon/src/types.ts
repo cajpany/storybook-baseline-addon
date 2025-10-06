@@ -27,6 +27,13 @@ export interface BaselineOptions {
   disableWarnings?: boolean;
 }
 
+export interface CSSinJSConfig {
+  enabled?: boolean;
+  libraries?: Array<"styled-components" | "emotion" | "stitches" | "all">;
+  ignoreInterpolations?: boolean;
+  showSource?: boolean;
+}
+
 export interface BaselineStoryParameters extends BaselineOptions {
   features?: string[];
   css?: string | string[];
@@ -34,6 +41,7 @@ export interface BaselineStoryParameters extends BaselineOptions {
   ignoreWarnings?: boolean;
   autoDetectJS?: boolean;
   jsSource?: string;
+  cssInJS?: CSSinJSConfig;
 }
 
 export interface BaselineSummaryEventPayload {
