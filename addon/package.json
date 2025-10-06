@@ -21,15 +21,15 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/storybook-addon-baseline"
+    "url": "https://github.com/cajpany/storybook-baseline-addon"
   },
-  "homepage": "https://github.com/YOUR_USERNAME/storybook-addon-baseline#readme",
+  "homepage": "https://github.com/cajpany/storybook-baseline-addon#readme",
   "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/storybook-addon-baseline/issues"
+    "url": "https://github.com/cajpany/storybook-baseline-addon/issues"
   },
   "type": "module",
   "license": "MIT",
-  "author": "Your Name <your.email@example.com>",
+  "author": "cajpany",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

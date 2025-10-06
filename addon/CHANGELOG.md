@@ -180,7 +180,7 @@ export const MyStory: Story = {
 ## Links
 
 - [npm package](https://www.npmjs.com/package/storybook-addon-baseline)
-- [GitHub repository](https://github.com/YOUR_USERNAME/storybook-addon-baseline)
+- [GitHub repository](https://github.com/cajpany/storybook-baseline-addon)
 - [Storybook addon catalog](https://storybook.js.org/addons/storybook-addon-baseline)
 - [Baseline initiative](https://web.dev/baseline)
 - [web-features package](https://github.com/web-platform-dx/web-features)

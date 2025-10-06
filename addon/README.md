@@ -1,5 +1,10 @@
 <!-- README START -->
 
+[![npm version](https://badge.fury.io/js/storybook-addon-baseline.svg)](https://www.npmjs.com/package/storybook-addon-baseline)
+[![Downloads](https://img.shields.io/npm/dm/storybook-addon-baseline.svg)](https://www.npmjs.com/package/storybook-addon-baseline)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
 # Storybook Addon Baseline
 
 > Automatically detect and display browser compatibility for your Storybook components using [Baseline](https://web.dev/baseline) data.
